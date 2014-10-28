@@ -1,0 +1,71 @@
+// See README.txt for information and build instructions.
+
+package bionic;
+
+// option java_package = "com.example.tutorial";
+// option java_outer_classname = "AddressBookProtos";
+
+message CentralControlsReport {
+
+  message CentralControl {
+
+    enum ControlType {
+      ANIMATION_CHANGE = 0;
+      PARAMETER_CHANGE = 1;
+    }
+
+    required ControlType controlType = 1;
+    required float controlParameter = 2;
+  }
+
+  repeated CentralControl centralControl = 1;
+  
+}
+
+
+message UnitMotionReport {
+
+  message UnitMotion {
+    enum MotionType {
+      ACCEL_MAGNITUDE = 0;
+      YAW = 1;
+      PITCH = 2;
+      ROLL = 3;
+    }
+
+    required MotionType motionType = 1;
+    required float motionData = 2;
+  }
+
+  repeated UnitMotion unitMotion = 1;
+}
+
+
+message UnitParametersReport {
+
+  message UnitParameter {
+    required string name = 1;
+    required float minVal = 2;
+    required float maxVal = 3;
+    required float currentVal = 4;
+  }
+
+  repeated UnitParameter unitParameter = 1;
+}
+
+/*
+Probably want different messages for:
+- Incoming
+  - Animation change
+  - Parameter change
+  - Effect trigger
+
+- Outgoing
+  - Motion data
+  - Events triggered
+  - Available parameters for a given animation
+  - Available parameters for a given filter
+
+
+
+*/

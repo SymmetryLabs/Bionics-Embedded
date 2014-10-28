@@ -1,0 +1,75 @@
+PSEUDOCODE
+
+// Abstract class for animations
+// Contains functions necessary to engine
+abstract class Animation {
+	public:
+		constructor
+		run(long _deltaMs)
+
+		// functions to access parameters
+		// What are the arguments here?
+		getParameter (name, value)
+		setParameter (name, value)
+
+	private:
+		array of parameters // does this belond here?
+
+}
+
+
+
+// One instantiation of an animation
+class Train extends Animation {
+	
+	run() {
+
+	}
+
+
+	private:
+		BasicParameter trainSpeed = new BasicParameter();
+		BasicParameter trainSize = new BasicParameter();
+		BasicParameter trainColor = new BasicParameter();
+		BasicParameter parameters
+
+}
+
+
+// Main animation function
+LEDrun() {
+	
+	run the appropriate animation
+	push the pixels out to the LEDs
+
+}
+
+
+/*
+I seem to have worked myself into a black hole of confusion.
+Classes and abstractions and functions are hard to keep track of.
+Maybe I just emulate what I want my classes to do, create custom functions + variables that start with the class name.
+
+Now what about the breakdown of the various parts of the system?
+Maybe I run modes...
+
+MPU into sensor values
+sensor values into filter -> conditioned inputs to animation
+
+animation engine
+runs with parameters and inputs
+maybe some parts track inputs
+dynamics are tweakable by parameters
+
+
+After everything is said and done...
+
+I have:
+- Selected inputs
+- Specific filters
+- Set animation model
+- Tweakable animation parameters
+- Output to LEDs
+
+Additionally, I can have an input from the Cubes...
+*/

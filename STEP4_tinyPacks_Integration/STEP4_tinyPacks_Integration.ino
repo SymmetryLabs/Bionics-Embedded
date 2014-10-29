@@ -105,79 +105,6 @@ XBeeResponse response = XBeeResponse();
 Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
 uint8_t option = 0;
 
-// Had to move here in order to compile...prefer it in xBee_functions
- void sendCommunications( void (*_loadTx)() )
-//void sendCommunications()
-{
-    // Pack data into transmission
-    // These are custom mapped from Power animation
-    // NEED TO UNDO THIS...
-    (*_loadTx)();
-//    loadUnitReport();
-
-    // Send data to main BASE
-    xbee.send(tx);
-
-    // Query xBee for incoming messages
-    if (xbee.readPacket(1))
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
-}
-
- void sendCommunicationsParamReport( void (*_loadTx)(BasicParameter *), BasicParameter *_basicParameter )
-//void sendCommunications()
-{
-    // Pack data into transmission
-    // These are custom mapped from Power animation
-    // NEED TO UNDO THIS...
-    (*_loadTx)(_basicParameter);
-//    loadUnitReport();
-
-    // Send data to main BASE
-    xbee.send(tx);
-
-    // Query xBee for incoming messages
-    if (xbee.readPacket(1))
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
-}
-
-
-
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
@@ -229,7 +156,7 @@ void loop() {
             break;
 
         case COMMUNICATE:
-           sendCommunications(packTx_Report);
+           sendCommunications_Report();
 //           sendCommunications();
             // getCommunications();
             break;

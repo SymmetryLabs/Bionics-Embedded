@@ -69,7 +69,7 @@ void LEDrun() {
 			Serial.print("roll LPF "); Serial.println(rollLPF);
 
 			float rollPercentP = rollLPF/(M_PI/4) + 0.5;
-			power.hue_Parameter.setPercent( rollPercentP );
+//			power.hue_Parameter.setPercent( rollPercentP );
 
 			// Map from 0-56599.9 -> MIN-MAX SparkleNumber
 			float magnitudePercent = 2.5*magnitudeP / (56599.);

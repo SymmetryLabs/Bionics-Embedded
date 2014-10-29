@@ -185,11 +185,24 @@ void loop() {
 
         case COMMUNICATE:
             Serial.println("-----");
+            
+            // LOAD INTO MESSAGE STRUCTURES?
+            getCommunications();
+            getCommunications();
+            
             BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
             sendCommunications_Report( REPORT_DATA, p, 2);
-            // getCommunications();
+
+            
+
+            // ACT ON THE MESSAGES HERE?
+            // IF SO, SET THE ANIMATION PARAMETERS
+            // DO DECAY FIRST
+            // THEN HUE
+
             Serial.println("----------");
             Serial.println();
+            delay(10);
             break;
 
     }

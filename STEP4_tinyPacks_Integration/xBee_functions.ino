@@ -153,6 +153,92 @@ void xbeeSetup()
 // ===                    XBEE FUNCTIONS                     ===
 // ================================================================
 
+void unpackRx() {
+  // Unpack and read entire message, continuously close() until nothing is left
+  char pName[5];
+  double val = 0.00;
+  
+  reader.setBuffer(packed_data, packed_data_length);
+  
+  do {
+    while(reader.next()) {
+      
+      uint8_t type = reader.getType();
+
+      switch ( type ) {
+        case TP_NONE:
+        {
+          Serial.println("Cannot print none");
+          break;
+        }
+    
+        case TP_BOOLEAN:
+        {
+          Serial.print("Boolean "); Serial.println(reader.getBoolean());
+          break;
+        }
+    
+        case TP_INTEGER:
+        {
+          Serial.print("Integer "); Serial.println(reader.getInteger());
+          break;
+        }
+    
+        case TP_REAL:
+        {
+          Serial.print("Real "); Serial.println(reader.getReal());
+          val = reader.getReal();
+          break;
+        }
+        
+        case TP_STRING:
+        {
+//          reader.getString(text, MAX_TEXT_LENGTH);
+//          Serial.print("String "); Serial.println( text );
+          reader.getString(pName, 5);
+          Serial.print("String "); Serial.println( pName );
+          break;
+        }
+        
+        case TP_BYTES:
+        {
+          // Serial.print("Bytes "); Serial.println(reader.getBytes());
+          Serial.println("Cannot print bytes");
+          break;
+        }
+        
+        case TP_LIST:
+        {
+          Serial.println("Cannot print list");
+          reader.openList();
+          break;
+        }
+        
+        case TP_MAP:
+        {
+          Serial.println("Opening map");
+          reader.openMap();
+          break;
+        }
+        default:
+          Serial.println("ERROR! NO TYPE");
+      }
+      
+      
+      
+      
+      
+      
+    }
+  }
+  
+  while (reader.close());
+  
+  //Set value for animation
+  Serial.print("Setting hue from xbee!  Val = "); Serial.println(val);
+  power.hue_Parameter.setPercent(val);
+}
+
 // Needs to return array of responses to the model
 void getCommunications()
 {
@@ -165,6 +251,20 @@ void getCommunications()
             {
                 xbee.getResponse().getRx16Response(rx16);
                 Serial.println("rx response");
+
+                // Unload into packed_data
+                byte responseLength = rx16.getDataLength();
+//                Serial.print("Response Length = "); Serial.println(responseLength);
+//                Serial.print("Printing received data ");
+                for ( byte i = 0; i < responseLength; i++ ) {
+                  packed_data[i] = rx16.getData(i);
+//                  Serial.println(packed_data[i]);
+                }
+                
+                packed_data_length = responseLength;
+//                readAndPrintElements();
+                // Need to unpacked appropriately here!
+                unpackRx();
             }
             else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
         }

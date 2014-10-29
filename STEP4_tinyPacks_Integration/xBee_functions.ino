@@ -10,151 +10,62 @@ void printParameterP( BasicParameter *_p ) {
 
 
 // ================================================================
-// ===                    WRITER FUNCTIONS                      ===
-// ================================================================
-
-
-// Prototype master function for write...
-void write_ReportOfBasicParameters( BasicParameter *_p[], byte _numParams ) {
-  byte _type = 0;
-  
-  writer.openMap();
-  
-    writer.putString("type");
-//    string typeString;
-    char typeString[5];
-    switch( _type ) {
-      case REPORT_DATA:
-        strcpy(typeString, "dRep");
-        break;
-      case REPORT_AVAIL_PARAMETERS:
-        strcpy(typeString, "pRep");
-        break;
-    }
-    writer.putString(typeString);
-  
-    writer.putString("msg");
-    writer.openList();
-    // Cycle through the available parameters
-    for ( byte i=0; i < _numParams; i++ )
-    {
-      // Serial.print("write_ReportOfBasicParameters i = "); Serial.println(i);
-      
-      writer.openMap();
-  
-        char _parameterName[5];
-        _p[i]->getName( _parameterName );
-        writer.putString("pName");
-        writer.putString(_parameterName);
-
-        if ( _type == REPORT_AVAIL_PARAMETERS ) {
-          writer.putString("min");
-          writer.putReal( _p[i]->getMin() );
-  
-          writer.putString("max");
-          writer.putReal( _p[i]->getMax() );
-        }
-    
-        writer.putString("val");
-        writer.putReal(_p[i]->getValue());
-  
-      writer.close();
-    }
-    writer.close();
-
-  writer.close();
-
-}
-
-// Call after initial buffer opening
-// Called sequentially to insert all the messages
-void write_Report_Unit( BasicParameter *_p ) {
-  writer.openMap();
-  
-    writer.putString("type");
-    writer.putString("Report");
-  
-    writer.putString("msg");
-    writer.openMap();
-  
-      char _parameterName[5];
-      _p->getName( _parameterName );
-      writer.putString("pName");
-      writer.putString(_parameterName);
-  
-      writer.putString("val");
-      writer.putReal(_p->getValue());
-  
-    writer.close();
-  writer.close();
-}
-
-// Call after initial buffer opening
-// Called sequentially to insert all the messages
-void write_Report_UnitParameter( BasicParameter *_p ) {
-
-  writer.openMap();
-    writer.putString("type");
-    writer.putString("paramReport");
-  
-    writer.putString("msg");
-    writer.openMap();
-  
-      writer.putString("pName");
-      char _parameterName[5];
-      _p->getName( _parameterName );
-      writer.putString( _parameterName );
-  
-      writer.putString("min");
-      writer.putReal( _p->getMin() );
-  
-      writer.putString("max");
-      writer.putReal( _p->getMax() );
-  
-      writer.putString("val");
-      writer.putReal( _p->getValue() );
-  
-    writer.close();
-  writer.close();
-}
-
-
-
-// ================================================================
 // ===                    PACK FUNCTIONS                      ===
 // ================================================================
 
-
 // Call every time you want to report data to central
-// void packTx_Report( BasicParameter *_p, byte _numParams ) {  // Ideally want an array of functions, combine with below function
-void packTx_Report() {  // Ideally want an array of functions, combine with below function
+// Generic function for ParameterReports and DataReports
+void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
   // Pack
   writer.setBuffer(packed_data, MAX_PACKED_DATA);
 
-  // write_Report_Unit( &power.level_Parameter ); // Happens to be delivering aaReal
-  // write_Report_Unit( &power.hue_Parameter ); // Happens to be delivering roll
+    writer.openMap();
+  
+      writer.putString("type");
+  //    string typeString;
+      char typeString[5];
+      switch( _reportType ) {
+        case REPORT_DATA:
+          strcpy(typeString, "dRep");
+          break;
+        case REPORT_AVAIL_PARAMETERS:
+          strcpy(typeString, "pRep");
+          break;
+      }
+      writer.putString(typeString);
+    
+      writer.putString("msg");
+      writer.openList();
+      
+      // Cycle through the available parameters
+      for ( byte i=0; i < _numParams; i++ )
+      { 
+        writer.openMap();
+    
+          char _parameterName[5];
+          _p[i]->getName( _parameterName );
+          writer.putString("pName");
+          writer.putString(_parameterName);
+  
+          if ( _reportType == REPORT_AVAIL_PARAMETERS ) {
+            writer.putString("min");
+            writer.putReal( _p[i]->getMin() );
+    
+            writer.putString("max");
+            writer.putReal( _p[i]->getMax() );
+          }
+      
+          writer.putString("val");
+          writer.putReal(_p[i]->getValue());
+    
+        writer.close();
+      }
+      
+      writer.close(); // Close the list of parameters
+  
+    writer.close(); // Close the dictionary with reportType and messages
 
-  BasicParameter *paramsToSend[2] = { &power.level_Parameter, &power.hue_Parameter };
-//  enum ReportType type = REPORT_DATA;
-//  write_ReportOfBasicParameters( type, paramsToSend, 2 );
-  write_ReportOfBasicParameters( paramsToSend, 2 );
-
-  writer.close();
-
-  packed_data_length = writer.getOffset();
-  if ( packed_data_length >= 98 ) { Serial.print("packed_data_length "); Serial.println(packed_data_length); }
-}
-
-// Call when you need to send the parameter report initially
-// Not sure if I'll be able to send this...
-// Ideally want an array of functions, combine with above function
-void packTx_ParameterReport( BasicParameter *_p ) {
-  // Pack
-  writer.setBuffer(packed_data, MAX_PACKED_DATA);
-
-  write_Report_UnitParameter( _p );
-
-  writer.close();
+  writer.close(); // Close the writer
 
   packed_data_length = writer.getOffset();
   Serial.print("packed_data_length "); Serial.println(packed_data_length);
@@ -167,49 +78,11 @@ void packTx_ParameterReport( BasicParameter *_p ) {
 // ===                    SEND FUNCTIONS                     ===
 // ================================================================
 
-
-// Had to move here in order to compile...prefer it in xBee_functions
- void sendCommunications_Report()
-{
-    // Pack data into transmission
-    // These are custom mapped from Power animation
-    // NEED TO UNDO THIS...
-    packTx_Report();
-    // readAndPrintElements();
-
-    // Send data to main BASE
-    xbee.send(tx);
-
-    // Query xBee for incoming messages
-    if (xbee.readPacket(1))
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response"); // Leave this in to see if there's so much data that incoming arrives before the tx ACK
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
-              // Serial.println("tx response");
-            }
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
-}
-
-void sendCommunications_ParamReport( BasicParameter *_p )
+void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParams )
 //void sendCommunications()
 {
     // Pack data into transmission
-    packTx_ParameterReport( _p );
+    packTx_Report( _type, _p, _numParams );
 
     // Send data to main BASE
     xbee.send(tx);
@@ -244,7 +117,6 @@ void sendCommunications_ParamReport( BasicParameter *_p )
 // ===                       XBEE SETUP                     ===
 // ================================================================
 
-
 void xbeeSetup()
 {
     Serial3.begin(115200);
@@ -252,15 +124,24 @@ void xbeeSetup()
     delay(1000);
 
     Serial.println("Sending controllable parameters...");
-    sendCommunications_ParamReport( &power.level_Parameter ); // Level
+    // sendCommunications_ParamReport( &power.level_Parameter ); // Level
+    BasicParameter *p[1] = { &power.level_Parameter };
+    sendCommunications_Report( 0, p, 1 ); // Level
     // printParameterP( &power.level_Parameter );
     delay(500);
-    sendCommunications_ParamReport( &power.hue_Parameter ); // Hue
+
+    p[0] = &power.hue_Parameter;
+    sendCommunications_Report( 0, p, 1 ); // Hue
     delay(500);
-    sendCommunications_ParamReport( &power.decay_Parameter ); // Decay
+
+    p[0] = &power.decay_Parameter;
+    sendCommunications_Report( 0, p, 1 ); // Decay
 
     delay(3000);
 }
+
+
+
 
 // ================================================================
 // ===                    XBEE FUNCTIONS                     ===
@@ -308,16 +189,6 @@ void getCommunications()
     xbee.send(tx);
 }
 */
-
-
-// ================================================================
-// ===                 TINYPACKS FUNCTIONS                      ===
-// ================================================================
-
-
-
-
-
 
 
 

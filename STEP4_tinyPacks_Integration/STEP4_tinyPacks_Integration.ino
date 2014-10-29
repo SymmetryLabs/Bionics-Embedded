@@ -167,8 +167,8 @@ void loop() {
 
         case COMMUNICATE:
             Serial.println("-----");
-           sendCommunications_Report();
-//           sendCommunications();
+            BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
+            sendCommunications_Report( 1, p, 2);
             // getCommunications();
             Serial.println();
             break;

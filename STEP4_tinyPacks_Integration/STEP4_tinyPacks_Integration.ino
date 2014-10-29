@@ -1,3 +1,4 @@
+#include "BasicParameter.h"
 /*
     10:30am 10/24/2014 - Got Train compiling and called to as an inheritance from Animation class
     7pm                - Train runs with Basic Parameters, controllable from internal loops
@@ -13,7 +14,8 @@
 CRGB leds[NUM_LEDS];
 CHSV ledsHSV[NUM_LEDS];
 
-#include "BasicParameter.h"
+// Had to move this to main file for proper dependencies...
+//#include "BasicParameter.h"
 #include "Animations.h"
 
 #include "I2Cdev.h"

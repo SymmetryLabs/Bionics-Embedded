@@ -1,3 +1,14 @@
+void printParameterP( BasicParameter *_p ) {
+  char name[5];
+  _p->getName(name);
+  // for ( byte i = 0; i < sizeof(name); i++ ) Serial.println(name[i], HEX);
+  Serial.print("Name: "); Serial.println(name);
+  Serial.print("Val: "); Serial.println(_p->getValue());
+  Serial.print("Min: "); Serial.println(_p->getMin());
+  Serial.print("Max: "); Serial.println(_p->getMax());
+}
+
+
 // ================================================================
 // ===                    WRITER FUNCTIONS                      ===
 // ================================================================
@@ -55,9 +66,9 @@ void write_Report_UnitParameter( const char *_parameterName, float _min, float _
 
 
 
-/*
+
 // Doesn't work late Tuesday night.  Difficult loading BasicParameter as a pointer.
-void write_Report_UnitParameter( BasicParameter *_basicParameter ) {
+void write_Report_UnitParameterP( BasicParameter *_p ) {
 
   writer.openMap();
     writer.putString("type");
@@ -68,22 +79,22 @@ void write_Report_UnitParameter( BasicParameter *_basicParameter ) {
   
       writer.putString("pName");
       char _parameterName[5];
-      _basicParameter->getName( _parameterName );
+      _p->getName( _parameterName );
       writer.putString( _parameterName );
   
       writer.putString("min");
-      writer.putReal( _basicParameter->getMin() );
+      writer.putReal( _p->getMin() );
   
       writer.putString("max");
-      writer.putReal( _basicParameter->getMax() );
+      writer.putReal( _p->getMax() );
   
       writer.putString("val");
-      writer.putReal( _basicParameter->getValue() );
+      writer.putReal( _p->getValue() );
   
     writer.close();
   writer.close();
 }
-*/
+
 
 
 // ================================================================
@@ -111,7 +122,7 @@ void packTx_Report( /*float _aaRealPercent, float _rollPercent*/ ) {  // Ideally
 
 // Call when you need to send the parameter report initially
 // Not sure if I'll be able to send this...
-//void packTx_ParameterReport( BasicParameter *_basicParameter ) {  // Ideally want an array of functions, combine with above function
+// Ideally want an array of functions, combine with above function
 void packTx_ParameterReport( char *_name, float _min, float _max, float _val ) {
   // Pack
   writer.setBuffer(packed_data, MAX_PACKED_DATA);
@@ -124,6 +135,21 @@ void packTx_ParameterReport( char *_name, float _min, float _max, float _val ) {
   packed_data_length = writer.getOffset();
   Serial.print("packed_data_length "); Serial.println(packed_data_length);
 }
+
+void packTx_ParameterReportP( BasicParameter *_p ) {
+  // Pack
+  writer.setBuffer(packed_data, MAX_PACKED_DATA);
+
+  write_Report_UnitParameterP( _p );
+
+  writer.close();
+
+  packed_data_length = writer.getOffset();
+  Serial.print("packed_data_length "); Serial.println(packed_data_length);
+}
+
+
+
 
 // ================================================================
 // ===                    SEND FUNCTIONS                     ===
@@ -165,14 +191,16 @@ void packTx_ParameterReport( char *_name, float _min, float _max, float _val ) {
     }
 }
 
-void sendCommunications_ParamReport1()
+void sendCommunications_ParamReport1( BasicParameter *_p )
 //void sendCommunications()
 {
     // Pack data into transmission
     // These are custom mapped from Power animation
-    char _name[5];
-    power.level_Parameter.getName(_name);
-    packTx_ParameterReport( _name, power.level_Parameter.getMin(), power.level_Parameter.getMax(), power.level_Parameter.getValue() );
+    // char _name[5];
+    // power.level_Parameter.getName(_name);
+    // packTx_ParameterReport( _name, power.level_Parameter.getMin(), power.level_Parameter.getMax(), power.level_Parameter.getValue() );
+
+    packTx_ParameterReportP( _p );
 
     // Send data to main BASE
     xbee.send(tx);
@@ -283,8 +311,11 @@ void xbeeSetup()
     delay(1000);
 
     Serial.println("Sending controllable parameters...");
-    sendCommunications_ParamReport1(); // Level
+    sendCommunications_ParamReport1( &power.level_Parameter ); // Level
+    printParameterP( &power.level_Parameter );
+    delay(500);
     sendCommunications_ParamReport2(); // Hue
+    delay(500);
     sendCommunications_ParamReport3(); // Decay
 
 //    sendCommunications();

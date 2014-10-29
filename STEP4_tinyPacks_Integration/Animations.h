@@ -1,4 +1,5 @@
-//#include "BasicParameter.h"
+// Had to move this to main file for proper dependencies...
+// #include "BasicParameter.h"
 
 // ================================================================
 // ===                     ABSTRACT CLASS                       ===

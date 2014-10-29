@@ -14,11 +14,9 @@ void printParameterP( BasicParameter *_p ) {
 // ================================================================
 
 
-// MESSAGE TYPES
-
 // Call after initial buffer opening
 // Called sequentially to insert all the messages
-void write_Report_Unit( const char *_parameterName, float _val) {
+void write_Report_Unit( BasicParameter *_p ) {
   writer.openMap();
   
     writer.putString("type");
@@ -27,11 +25,13 @@ void write_Report_Unit( const char *_parameterName, float _val) {
     writer.putString("msg");
     writer.openMap();
   
+      char _parameterName[5];
+      _p->getName( _parameterName );
       writer.putString("pName");
       writer.putString(_parameterName);
   
       writer.putString("val");
-      writer.putReal(_val);
+      writer.putReal(_p->getValue());
   
     writer.close();
   writer.close();
@@ -39,36 +39,7 @@ void write_Report_Unit( const char *_parameterName, float _val) {
 
 // Call after initial buffer opening
 // Called sequentially to insert all the messages
-void write_Report_UnitParameter( const char *_parameterName, float _min, float _max, float _val ) {
-
-  writer.openMap();
-    writer.putString("type");
-    writer.putString("paramReport");
-  
-    writer.putString("msg");
-    writer.openMap();
-  
-      writer.putString("pName");
-      writer.putString(_parameterName);
-  
-      writer.putString("min");
-      writer.putReal(_min);
-  
-      writer.putString("max");
-      writer.putReal(_max);
-  
-      writer.putString("val");
-      writer.putReal(_val);
-  
-    writer.close();
-  writer.close();
-}
-
-
-
-
-// Doesn't work late Tuesday night.  Difficult loading BasicParameter as a pointer.
-void write_Report_UnitParameterP( BasicParameter *_p ) {
+void write_Report_UnitParameter( BasicParameter *_p ) {
 
   writer.openMap();
     writer.putString("type");
@@ -111,8 +82,8 @@ void packTx_Report( /*float _aaRealPercent, float _rollPercent*/ ) {  // Ideally
   // Pack
   writer.setBuffer(packed_data, MAX_PACKED_DATA);
 
-  write_Report_Unit("aaRealP", power.level_Parameter.getValue() );
-  write_Report_Unit("rollP", power.hue_Parameter.getValue() );
+  write_Report_Unit( &power.level_Parameter ); // Happens to be delivering aaReal
+  write_Report_Unit( &power.hue_Parameter ); // Happens to be delivering roll
 
   writer.close();
 
@@ -123,24 +94,11 @@ void packTx_Report( /*float _aaRealPercent, float _rollPercent*/ ) {  // Ideally
 // Call when you need to send the parameter report initially
 // Not sure if I'll be able to send this...
 // Ideally want an array of functions, combine with above function
-void packTx_ParameterReport( char *_name, float _min, float _max, float _val ) {
+void packTx_ParameterReport( BasicParameter *_p ) {
   // Pack
   writer.setBuffer(packed_data, MAX_PACKED_DATA);
 
-//  write_Report_UnitParameter( _basicParameter );
-  write_Report_UnitParameter( _name, _min, _max, _val );
-
-  writer.close();
-
-  packed_data_length = writer.getOffset();
-  Serial.print("packed_data_length "); Serial.println(packed_data_length);
-}
-
-void packTx_ParameterReportP( BasicParameter *_p ) {
-  // Pack
-  writer.setBuffer(packed_data, MAX_PACKED_DATA);
-
-  write_Report_UnitParameterP( _p );
+  write_Report_UnitParameter( _p );
 
   writer.close();
 
@@ -191,7 +149,7 @@ void packTx_ParameterReportP( BasicParameter *_p ) {
     }
 }
 
-void sendCommunications_ParamReport1( BasicParameter *_p )
+void sendCommunications_ParamReport( BasicParameter *_p )
 //void sendCommunications()
 {
     // Pack data into transmission
@@ -200,7 +158,7 @@ void sendCommunications_ParamReport1( BasicParameter *_p )
     // power.level_Parameter.getName(_name);
     // packTx_ParameterReport( _name, power.level_Parameter.getMin(), power.level_Parameter.getMax(), power.level_Parameter.getValue() );
 
-    packTx_ParameterReportP( _p );
+    packTx_ParameterReport( _p );
 
     // Send data to main BASE
     xbee.send(tx);
@@ -228,80 +186,12 @@ void sendCommunications_ParamReport1( BasicParameter *_p )
     }
 }
 
-void sendCommunications_ParamReport2()
-//void sendCommunications()
-{
-    // Pack data into transmission
-    // These are custom mapped from Power animation
-    char _name[5];
-    power.hue_Parameter.getName(_name);
-    packTx_ParameterReport( _name, power.hue_Parameter.getMin(), power.hue_Parameter.getMax(), power.hue_Parameter.getValue() );
 
-    // Send data to main BASE
-    xbee.send(tx);
 
-    // Query xBee for incoming messages
-    if (xbee.readPacket(1))
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
-}
-
-void sendCommunications_ParamReport3()
-//void sendCommunications()
-{
-    // Pack data into transmission
-    // These are custom mapped from Power animation
-    char _name[5];
-    power.decay_Parameter.getName(_name);
-    packTx_ParameterReport( _name, power.decay_Parameter.getMin(), power.decay_Parameter.getMax(), power.decay_Parameter.getValue() );
-
-    // Send data to main BASE
-    xbee.send(tx);
-
-    // Query xBee for incoming messages
-    if (xbee.readPacket(1))
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
-}
 
 // ================================================================
 // ===                       XBEE SETUP                     ===
 // ================================================================
-
 
 
 void xbeeSetup()
@@ -311,14 +201,12 @@ void xbeeSetup()
     delay(1000);
 
     Serial.println("Sending controllable parameters...");
-    sendCommunications_ParamReport1( &power.level_Parameter ); // Level
-    printParameterP( &power.level_Parameter );
+    sendCommunications_ParamReport( &power.level_Parameter ); // Level
+    // printParameterP( &power.level_Parameter );
     delay(500);
-    sendCommunications_ParamReport2(); // Hue
+    sendCommunications_ParamReport( &power.hue_Parameter ); // Hue
     delay(500);
-    sendCommunications_ParamReport3(); // Decay
-
-//    sendCommunications();
+    sendCommunications_ParamReport( &power.decay_Parameter ); // Decay
 
     delay(3000);
 }
@@ -367,28 +255,6 @@ void getCommunications()
 
     // Send data to main BASE
     xbee.send(tx);
-
-    // Query xBee for incoming messages
-    if (xbee.readPacket(1))
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
 }
 */
 
@@ -481,28 +347,3 @@ void printElement() {
       Serial.println("ERROR! NO TYPE");
   }
 }
-
-
-
-
-
-
-/*
-// THIS SHOULD NEVER BE ON THE UNITS
-void write_Control_UnitParameter( const char *_parameterName, float _val ) {
-
-  writer.putString("msgType");
-  writer.putString("UnitParamControl");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString(_parameterName);
-
-    writer.putString("val");
-    writer.putReal(_val);
-
-  writer.close();
-}
-*/

@@ -25,8 +25,7 @@ void LEDrun() {
 	// Calculate deltaTime since last animate (animations are time dependent)
 	// This allows for non-fixed framerate running - the Teensy does its best
 	unsigned long deltaMs = millis() - lastAnimate;
-	Serial.print("dT Animation ");
-	Serial.println(deltaMs);
+	Serial.print("dT Animation "); Serial.println(deltaMs);
 
 
 	hueNow = (hueNow + 1) % 255;
@@ -101,7 +100,7 @@ void LEDrun() {
 		}
 	}
 
-	FastLED.show();
+	LEDS.show();
 
 	lastAnimate = millis();
 }

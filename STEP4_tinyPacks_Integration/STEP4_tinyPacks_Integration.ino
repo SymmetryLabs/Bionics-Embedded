@@ -75,6 +75,11 @@ AnimationState currentAnimation = POWER;
 // ===                    XBEE SETUP                     ===
 // ================================================================
 
+enum ReportType {
+  REPORT_DATA,
+  REPORT_AVAIL_PARAMETERS
+};
+
 #include <TinyPacks.h>
 
 PackWriter writer;
@@ -150,17 +155,22 @@ void loop() {
     switch ( state ) {
 
         case READ_SENSORS:
+            Serial.println("----------");
+            Serial.println("Start STATE MACHINE");
             MPUread();
             break;
 
         case ANIMATE:
+            Serial.println("-----");
             LEDrun();
             break;
 
         case COMMUNICATE:
+            Serial.println("-----");
            sendCommunications_Report();
 //           sendCommunications();
             // getCommunications();
+            Serial.println();
             break;
 
     }

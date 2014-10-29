@@ -14,6 +14,58 @@ void printParameterP( BasicParameter *_p ) {
 // ================================================================
 
 
+// Prototype master function for write...
+void write_ReportOfBasicParameters( BasicParameter *_p[], byte _numParams ) {
+  byte _type = 0;
+  
+  writer.openMap();
+  
+    writer.putString("type");
+//    string typeString;
+    char typeString[5];
+    switch( _type ) {
+      case REPORT_DATA:
+        strcpy(typeString, "dRep");
+        break;
+      case REPORT_AVAIL_PARAMETERS:
+        strcpy(typeString, "pRep");
+        break;
+    }
+    writer.putString(typeString);
+  
+    writer.putString("msg");
+    writer.openList();
+    // Cycle through the available parameters
+    for ( byte i=0; i < _numParams; i++ )
+    {
+      // Serial.print("write_ReportOfBasicParameters i = "); Serial.println(i);
+      
+      writer.openMap();
+  
+        char _parameterName[5];
+        _p[i]->getName( _parameterName );
+        writer.putString("pName");
+        writer.putString(_parameterName);
+
+        if ( _type == REPORT_AVAIL_PARAMETERS ) {
+          writer.putString("min");
+          writer.putReal( _p[i]->getMin() );
+  
+          writer.putString("max");
+          writer.putReal( _p[i]->getMax() );
+        }
+    
+        writer.putString("val");
+        writer.putReal(_p[i]->getValue());
+  
+      writer.close();
+    }
+    writer.close();
+
+  writer.close();
+
+}
+
 // Call after initial buffer opening
 // Called sequentially to insert all the messages
 void write_Report_Unit( BasicParameter *_p ) {
@@ -73,22 +125,24 @@ void write_Report_UnitParameter( BasicParameter *_p ) {
 // ================================================================
 
 
-// Use this for the 10/28 test...
-// NEED TO ABSTRACT THIS TO INCLUDE THE FULL MAPPING OF SENT DATA FOR FLEXIBILITY
-// IE SHOULD BE ABLE TO ACCEPT VARIABLE NUMBERS OF PARAMETERS, WITH THEIR NAMES
-
 // Call every time you want to report data to central
-void packTx_Report( /*float _aaRealPercent, float _rollPercent*/ ) {  // Ideally want an array of functions, combine with below function
+// void packTx_Report( BasicParameter *_p, byte _numParams ) {  // Ideally want an array of functions, combine with below function
+void packTx_Report() {  // Ideally want an array of functions, combine with below function
   // Pack
   writer.setBuffer(packed_data, MAX_PACKED_DATA);
 
-  write_Report_Unit( &power.level_Parameter ); // Happens to be delivering aaReal
-  write_Report_Unit( &power.hue_Parameter ); // Happens to be delivering roll
+  // write_Report_Unit( &power.level_Parameter ); // Happens to be delivering aaReal
+  // write_Report_Unit( &power.hue_Parameter ); // Happens to be delivering roll
+
+  BasicParameter *paramsToSend[2] = { &power.level_Parameter, &power.hue_Parameter };
+//  enum ReportType type = REPORT_DATA;
+//  write_ReportOfBasicParameters( type, paramsToSend, 2 );
+  write_ReportOfBasicParameters( paramsToSend, 2 );
 
   writer.close();
 
   packed_data_length = writer.getOffset();
-  Serial.print("packed_data_length "); Serial.println(packed_data_length);
+  if ( packed_data_length >= 98 ) { Serial.print("packed_data_length "); Serial.println(packed_data_length); }
 }
 
 // Call when you need to send the parameter report initially
@@ -116,12 +170,12 @@ void packTx_ParameterReport( BasicParameter *_p ) {
 
 // Had to move here in order to compile...prefer it in xBee_functions
  void sendCommunications_Report()
-//void sendCommunications()
 {
     // Pack data into transmission
     // These are custom mapped from Power animation
     // NEED TO UNDO THIS...
     packTx_Report();
+    // readAndPrintElements();
 
     // Send data to main BASE
     xbee.send(tx);
@@ -133,9 +187,11 @@ void packTx_ParameterReport( BasicParameter *_p ) {
             if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
             {
                 xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
+                Serial.println("rx response"); // Leave this in to see if there's so much data that incoming arrives before the tx ACK
             }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
+            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) {
+              // Serial.println("tx response");
+            }
         }
         else
         {
@@ -153,11 +209,6 @@ void sendCommunications_ParamReport( BasicParameter *_p )
 //void sendCommunications()
 {
     // Pack data into transmission
-    // These are custom mapped from Power animation
-    // char _name[5];
-    // power.level_Parameter.getName(_name);
-    // packTx_ParameterReport( _name, power.level_Parameter.getMin(), power.level_Parameter.getMax(), power.level_Parameter.getValue() );
-
     packTx_ParameterReport( _p );
 
     // Send data to main BASE

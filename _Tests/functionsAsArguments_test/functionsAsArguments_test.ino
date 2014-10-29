@@ -14,14 +14,14 @@ using namespace std;
 // BasicParameter param2 = new BasicParameter("leve", 1.5, 1.0, 2.0);
 
 // Option 3 = THIS WORKS
-BasicParameter param1("leve", 0.5, 0.0, 1.0);
-BasicParameter param2("leve", 1.5, 1.0, 2.0);
+BasicParameter param1("hue", 0.5, 0.0, 1.0);
+BasicParameter param2("dec", 1.5, 1.0, 2.0);
 
 // Array of BasicParameters
 
 // BasicParameter *params[3];
 // params[0] = new BasicParameter();
-// BasicParameter *params[3] = { &param1, &param1, &param1 };
+BasicParameter *params[3] = { &param1, &param2, &param1 };
 // params[0] = param2;
 // *params[1] = param2;
 // *params[2] = param1;
@@ -65,7 +65,10 @@ void loop()
 	// Change the value by passing a pointer
 	// setParameterP( &param1 );
 
-	printByPassParameter1( &param1 );
+	// printByPassParameter1( &param1 );
+
+	printParametersP(params, 3);
+
 
 	Serial.println("-----");
 	delay(2000);
@@ -85,6 +88,33 @@ void printParameterP( BasicParameter *_p) {
 	Serial.print("Max: "); Serial.println(_p->getMax());
 }
 
+// Woot!  Works for passing an array of parameters!
+void printParametersP( BasicParameter *_p[], byte _numParams ) {
+	for ( byte i=0; i < _numParams; i++ ) {
+		char name[5];
+		_p[i]->getName(name);
+		// for ( byte i = 0; i < sizeof(name); i++ ) Serial.println(name[i], HEX);
+		Serial.print("Name: "); Serial.println(name);
+		Serial.print("Val: "); Serial.println(_p[i]->getValue());
+		Serial.print("Min: "); Serial.println(_p[i]->getMin());
+		Serial.print("Max: "); Serial.println(_p[i]->getMax());
+	}
+}
+
+
+
+
+
+// Works
+void setParameterP( BasicParameter *_p ) { // Should the argument be a const?  Won't compile...
+	_p->setValue(1.0);
+}
+
+
+
+// & operator functions...
+// Decided not to use
+
 void printParameter( BasicParameter &_p ) { // Should the argument be a const?  Won't compile...
 	char name[5];
 	_p.getName(name);
@@ -100,16 +130,16 @@ void setParameter( BasicParameter &_p ) { // Should the argument be a const?  Wo
 	_p.setValue(1.0);
 }
 
-// Works
-void setParameterP( BasicParameter *_p ) { // Should the argument be a const?  Won't compile...
-	_p->setValue(1.0);
-}
-
+// PROVES HOW TO PASS A POINTER THROUGH MULTIPLE FUNCTIONS
+// &original_variable as argument to first function ( *_ptr )
+// to pass again, simply use _ptr (the address, has same effect as the original deference &)
+// Call this first
 void printByPassParameter1 ( BasicParameter *_p ) {
 	// printParameterP( _p );
 	printByPassParameter2 ( _p );
 }
 
+// Called by the other function
 void printByPassParameter2 ( BasicParameter *_p ) {
 	printParameterP( _p );
 }

@@ -46,7 +46,14 @@ inline STATES& operator++(STATES& _state, int)  // <--- note -- must be a refere
 
 enum STATES state = READ_SENSORS;
 
-
+//enum ReportType {
+//  REPORT_DATA,
+//  REPORT_AVAIL_PARAMETERS
+//};
+//
+//enum ReportType reportType = REPORT_AVAIL_PARAMETERS;
+#define REPORT_DATA 0
+#define REPORT_AVAIL_PARAMETERS 1
 
 // ================================================================
 // ===                    Animation SETUP                     ===
@@ -74,11 +81,6 @@ AnimationState currentAnimation = POWER;
 // ================================================================
 // ===                    XBEE SETUP                     ===
 // ================================================================
-
-enum ReportType {
-  REPORT_DATA,
-  REPORT_AVAIL_PARAMETERS
-};
 
 #include <TinyPacks.h>
 
@@ -168,7 +170,7 @@ void loop() {
         case COMMUNICATE:
             Serial.println("-----");
             BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
-            sendCommunications_Report( 1, p, 2);
+            sendCommunications_Report( REPORT_DATA, p, 2);
             // getCommunications();
             Serial.println();
             break;

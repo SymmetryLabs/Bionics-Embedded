@@ -8,7 +8,6 @@ void printParameterP( BasicParameter *_p ) {
   Serial.print("Max: "); Serial.println(_p->getMax());
 }
 
-
 // ================================================================
 // ===                    PACK FUNCTIONS                      ===
 // ================================================================
@@ -22,7 +21,6 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
     writer.openMap();
   
       writer.putString("type");
-  //    string typeString;
       char typeString[5];
       switch( _reportType ) {
         case REPORT_DATA:
@@ -124,18 +122,16 @@ void xbeeSetup()
     delay(1000);
 
     Serial.println("Sending controllable parameters...");
-    // sendCommunications_ParamReport( &power.level_Parameter ); // Level
-    BasicParameter *p[1] = { &power.level_Parameter };
-    sendCommunications_Report( 0, p, 1 ); // Level
-    // printParameterP( &power.level_Parameter );
+    BasicParameter *p[1] = { &power.level_Parameter }; // Need to initialize this array first, I don't know better syntax
+    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Level
     delay(500);
 
     p[0] = &power.hue_Parameter;
-    sendCommunications_Report( 0, p, 1 ); // Hue
+    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Hue
     delay(500);
 
     p[0] = &power.decay_Parameter;
-    sendCommunications_Report( 0, p, 1 ); // Decay
+    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Decay
 
     delay(3000);
 }
@@ -174,21 +170,6 @@ void getCommunications()
     }
 }
 
-/*
-// sendCommunications argument = a function that returns void and has no arguments
- void sendCommunications( void (*_loadTx)() )
-//void sendCommunications()
-{
-    // Pack data into transmission
-    // These are custom mapped from Power animation
-    // NEED TO UNDO THIS...
-    (*_loadTx)();
-//    loadUnitReport();
-
-    // Send data to main BASE
-    xbee.send(tx);
-}
-*/
 
 
 

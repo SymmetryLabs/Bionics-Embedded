@@ -1,23 +1,4 @@
 
-unsigned long lastAnimate = 0;
-
-Train train;
-Fire fire;
-Sparkle sparkle;
-Power power;
-RunningRainbow runningrainbow;
-
-enum AnimationState {
-	FIRE,
-	TRAIN,
-	SPARKLE,
-	POWER,
-	RUNNINGRAINBOW
-};
-
-AnimationState currentAnimation = POWER;
-
-
 
 void LEDsetup() {
 

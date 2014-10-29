@@ -1,44 +1,125 @@
-#include <TinyPacks.h>
+// MESSAGE TYPES
 
-PackWriter writer;
-PackReader reader;
+// Call after initial buffer opening
+// Called sequentially to insert all the messages
+void write_Report_Unit( const char *_parameterName, float _val) {
+  writer.openMap();
+  
+    writer.putString("type");
+    writer.putString("Report");
+  
+    writer.putString("msg");
+    writer.openMap();
+  
+      writer.putString("pName");
+      writer.putString(_parameterName);
+  
+      writer.putString("val");
+      writer.putReal(_val);
+  
+    writer.close();
+  writer.close();
+}
 
-#define MAX_TEXT_LENGTH 32
-char text[MAX_TEXT_LENGTH] = "";
+// Call after initial buffer opening
+// Called sequentially to insert all the messages
+/*
+void write_Report_UnitParameter( const char *_parameterName, float _min, float _max, float _val ) {
 
-// enum MSG_TYPE {
-//     UNIT_PARAM_CONTROL = 0,
-//     UNIT_ANIM_CONTROL = 1
-// };
+  writer.openMap();
+    writer.putString("type");
+    writer.putString("paramReport");
+  
+    writer.putString("msg");
+    writer.openMap();
+  
+      writer.putString("pName");
+      writer.putString(_parameterName);
+  
+      writer.putString("min");
+      writer.putReal(_min);
+  
+      writer.putString("max");
+      writer.putReal(_max);
+  
+      writer.putString("val");
+      writer.putReal(_val);
+  
+    writer.close();
+  writer.close();
+}
+*/
 
-struct ParamControlMessage {
-  char key[16];
-  float val;
-};
+
+
+void write_Report_UnitParameter( BasicParameter *_basicParameter ) {
+
+  writer.openMap();
+    writer.putString("type");
+    writer.putString("paramReport");
+  
+    writer.putString("msg");
+    writer.openMap();
+  
+      writer.putString("pName");
+      char _parameterName[5];
+      _basicParameter->getName( _parameterName );
+      writer.putString( _parameterName );
+  
+      writer.putString("min");
+      writer.putReal( _basicParameter->getMin() );
+  
+      writer.putString("max");
+      writer.putReal( _basicParameter->getMax() );
+  
+      writer.putString("val");
+      writer.putReal( _basicParameter->getValue() );
+  
+    writer.close();
+  writer.close();
+}
 
 
 // ================================================================
-// ===                    XBEE SETUP                     ===
+// ===                    WRITER FUNCTIONS                      ===
 // ================================================================
 
 
-#include "XBee.h"
+// Use this for the 10/28 test...
+// NEED TO ABSTRACT THIS TO INCLUDE THE FULL MAPPING OF SENT DATA FOR FLEXIBILITY
+// IE SHOULD BE ABLE TO ACCEPT VARIABLE NUMBERS OF PARAMETERS, WITH THEIR NAMES
 
-// xBee variables
-XBee xbee = XBee();
+// Call every time you want to report data to central
+void packTx_Report( /*float _aaRealPercent, float _rollPercent*/ ) {  // Ideally want an array of functions, combine with below function
+  // Pack
+  writer.setBuffer(packed_data, MAX_PACKED_DATA);
 
-#define MAX_PACKED_DATA 100
-uint8_t packed_data[MAX_PACKED_DATA];
-int packed_data_length;
+  write_Report_Unit("aaRealP", power.level_Parameter.getValue() );
+  write_Report_Unit("rollP", power.hue_Parameter.getValue() );
 
-// Transmission variables
-Tx16Request tx = Tx16Request(0x0001, packed_data, sizeof(packed_data)); // 16-bit addressing: Enter address of remote XBee, typically the coordinator
-TxStatusResponse txStatus = TxStatusResponse();
+  writer.close();
 
-// Receiving variables
-XBeeResponse response = XBeeResponse(); 
-Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
-uint8_t option = 0;
+  packed_data_length = writer.getOffset();
+  Serial.print("packed_data_length "); Serial.println(packed_data_length);
+}
+
+// Call when you need to send the parameter report initially
+// Not sure if I'll be able to send this...
+void packTx_ParameterReport( BasicParameter *_basicParameter ) {  // Ideally want an array of functions, combine with above function
+  // Pack
+  writer.setBuffer(packed_data, MAX_PACKED_DATA);
+
+  write_Report_UnitParameter( _basicParameter );
+
+  writer.close();
+
+  packed_data_length = writer.getOffset();
+  Serial.print("packed_data_length "); Serial.println(packed_data_length);
+}
+
+
+
+
 
 
 
@@ -46,6 +127,15 @@ void xbeeSetup()
 {
     Serial3.begin(115200);
     xbee.setSerial(Serial3);
+    delay(1000);
+
+    Serial.println("Sending controllable parameters...");
+    sendCommunicationsParamReport( packTx_ParameterReport( power.decay_Parameter ) );
+    sendCommunicationsParamReport( packTx_ParameterReport( power.level_Parameter ) );
+    sendCommunicationsParamReport( packTx_ParameterReport( power.hue_Parameter ) );
+
+//    sendCommunications();
+
     delay(3000);
 }
 
@@ -80,14 +170,16 @@ void getCommunications()
     }
 }
 
-
-
-void sendCommunications()
+/*
+// sendCommunications argument = a function that returns void and has no arguments
+ void sendCommunications( void (*_loadTx)() )
+//void sendCommunications()
 {
     // Pack data into transmission
     // These are custom mapped from Power animation
     // NEED TO UNDO THIS...
-    writeFunction( power.level_Parameter.getPercent(), power.hue_Parameter.getPercent() );
+    (*_loadTx)();
+//    loadUnitReport();
 
     // Send data to main BASE
     xbee.send(tx);
@@ -114,6 +206,7 @@ void sendCommunications()
         Serial.println(F("No tx ack from xBee"));
     }
 }
+*/
 
 
 // ================================================================
@@ -122,113 +215,6 @@ void sendCommunications()
 
 
 
-
-
-
-
-
-
-
-
-// ================================================================
-// ===                    WRITER FUNCTIONS                      ===
-// ================================================================
-
-// Use this for the 10/28 test...
-// NEED TO ABSTRACT THIS TO INCLUDE THE FULL MAPPING OF SENT DATA FOR FLEXIBILITY
-// IE SHOULD BE ABLE TO ACCEPT VARIABLE NUMBERS OF PARAMETERS, WITH THEIR NAMES
-void writeFunction(float _aaRealPercent, float _rollPercent) {
-  // Pack
-  writer.setBuffer(packed_data, MAX_PACKED_DATA);
-
-  writer.openMap();
-
-    // write_Report_UnitParameter("decay", 0.0, 0.5, 1.0);
-    // write_Report_UnitParameter("hue", 1.5, 2.0, 2.5);
-
-  // write_Control_UnitParameter("decay", 1.0);
-  // write_Control_UnitParameter("hue", 2.5);
-
-    // write_Report_Unit("aaRealPercent", _aaRealPercent);
-    // write_Report_Unit("rollPercent", _rollPercent);
-
-  writer.putString("msgType");
-  writer.putString("UnitReport");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString("aaRealPercent");
-
-    writer.putString("val");
-    writer.putReal(_aaRealPercent);
-
-  writer.close();
-
-  writer.close();
-
-  packed_data_length = writer.getOffset();
-}
-
-
-void write_Report_UnitParameter( const char *_parameterName, float _min, float _max, float _val ) {
-
-  writer.putString("msgType");
-  writer.putString("UnitParamReport");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString(_parameterName);
-
-    writer.putString("min");
-    writer.putReal(_min);
-
-    writer.putString("max");
-    writer.putReal(_max);
-
-    writer.putString("val");
-    writer.putReal(_val);
-
-  writer.close();
-}
-
-// THIS SHOULD NEVER BE ON THE UNITS
-void write_Control_UnitParameter( const char *_parameterName, float _val ) {
-
-  writer.putString("msgType");
-  writer.putString("UnitParamControl");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString(_parameterName);
-
-    writer.putString("val");
-    writer.putReal(_val);
-
-  writer.close();
-}
-
-
-void write_Report_Unit( const char *_parameterName, float _val) {
-  writer.putString("msgType");
-  writer.putString("UnitReport");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString(_parameterName);
-
-    writer.putString("val");
-    writer.putReal(_val);
-
-  writer.close();
-}
 
 
 
@@ -248,98 +234,6 @@ void readAndPrintElements() {
     }
   }
   while (reader.close());
-}
-
-
-void readFunctionCustom() {
-
-  struct ParamControlMessage message1;
-
-  // Unpack and read entire message, continuously close() until nothing is left
-  reader.setBuffer(packed_data, packed_data_length);
-
-  // NEED TO ADD ONE FROM THE XBEE DATA STRUCTURE
-  // reader.setBuffer(rx16.getData()+1, packed_data_length); // need to remove first element
-
-  // STEPS
-  // GO TO NEXT TO GET AWAY FROM THE AMOUNT
-  // OPEN THE MAP
-  // START ITERATING
-  byte currentMessage = 0;
-
-
-  if ( reader.next() && reader.openMap() ) {
-    Serial.println("Begin parsing message");
-    while ( reader.next() && reader.match("msgType") ) {
-
-      // Read the message type to text
-      reader.getString(text, MAX_TEXT_LENGTH);
-
-      // TECHNICALLY this goes to "msg"
-      reader.next();
-      // TECHNICALY this goes to the map afterwards
-      reader.next();
-
-      // Open the map to read it
-      reader.openMap();
-
-
-      // Different unloaders based on the message type
-      if ( strcmp(text,"UnitParamControl") == 0 ) {
-
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitParamControl");
-
-        while ( reader.next() ) {
-          // printElement();
-          if ( reader.match("pName") ) reader.getString(message1.key, sizeof(message1.key));
-          else if ( reader.match("val") ) message1.val = reader.getReal();
-          else Serial.println("Not a valid UnitParamControl key");
-        }
-        reader.close();
-      }
-
-      else if ( strcmp(text,"UnitAnimControl") == 0 ) {
-
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitAnimControl");
-
-        while ( reader.next() ) printElement();
-        reader.close();
-      }
-
-      /*
-      // These technically won't be necessary on the units...
-      else if ( strcmp(text,"UnitParamReport") == 0 ) {
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitParamReport");
-        while ( reader.next() ) printElement();
-        reader.close();
-      }
-
-      else if ( strcmp(text,"UnitReport") == 0 ) {
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitReport");
-        while ( reader.next() ) printElement();
-        reader.close();
-      }
-      */
-
-      else Serial.println("Unsupported message type");
-      Serial.println();
-    }
-  }
-  else Serial.println("Error parsing incoming message");
-
-
-  Serial.print("Message1 "); Serial.print(message1.key); Serial.print(" : "); Serial.println(message1.val );
-}
-
-
-
-
-void read_Control_Unit () {
-
 }
 
 
@@ -402,4 +296,28 @@ void printElement() {
     default:
       Serial.println("ERROR! NO TYPE");
   }
+}
+
+
+
+
+
+
+
+// THIS SHOULD NEVER BE ON THE UNITS
+void write_Control_UnitParameter( const char *_parameterName, float _val ) {
+
+  writer.putString("msgType");
+  writer.putString("UnitParamControl");
+
+  writer.putString("msg");
+  writer.openMap();
+
+    writer.putString("pName");
+    writer.putString(_parameterName);
+
+    writer.putString("val");
+    writer.putReal(_val);
+
+  writer.close();
 }

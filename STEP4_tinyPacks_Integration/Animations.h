@@ -1,3 +1,5 @@
+//#include "BasicParameter.h"
+
 // ================================================================
 // ===                     ABSTRACT CLASS                       ===
 // ================================================================
@@ -15,48 +17,6 @@ class Animation {
 };
 
 
-// ================================================================
-// ===                    BASIC PARAMETER                       ===
-// ================================================================
-
-class BasicParameter {
-	public:
-		BasicParameter( float _initialValue, float _minValue, float _maxValue );
-		float getValue();
-		float getPercent();
-		float getMin();
-		float getMax();
-		void setValue( float _newValue );
-		void setPercent ( float _newPercent );
-
-	private:
-		float currentValue;
-		float minValue;
-		float maxValue;
-};
-
-BasicParameter::BasicParameter( float _initialValue, float _minValue, float _maxValue ) {
-	currentValue = _initialValue;
-	minValue = _minValue;
-	maxValue = _maxValue;
-}
-
-float BasicParameter::getValue() { return currentValue; }
-
-float BasicParameter::getPercent() { return (currentValue-minValue)/(maxValue-minValue); }
-
-float BasicParameter::getMin() { return minValue; }
-
-float BasicParameter::getMax() { return maxValue; }
-
-void BasicParameter::setValue( float _newValue ) { currentValue = _newValue; }
-
-void BasicParameter::setPercent( float _newPercent ) {
-	float newValue = minValue + _newPercent * (maxValue-minValue);
-	currentValue = newValue;
-}
-
-
 
 // ================================================================
 // ===                     FIRE ANIMATION                       ===
@@ -68,9 +28,9 @@ class Fire : public Animation {
 		// Model parameters
 		// BasicParameter diffusionConstant = new BasicParameter();
 		// What should ranges be for these parameters?  How do they affect time-based animations?
-		BasicParameter diffusionParameter = BasicParameter(1, 0, 1);
-		BasicParameter coolingParameter = BasicParameter(100, 20, 100);
-		BasicParameter sparkingParameter = BasicParameter(50, 50, 200);
+		BasicParameter diffusionParameter = BasicParameter("diffu", 1, 0, 1);
+		BasicParameter coolingParameter = BasicParameter("cooli", 100, 20, 100);
+		BasicParameter sparkingParameter = BasicParameter("spark", 50, 50, 200);
 
 		void draw( long _deltaTime );
 
@@ -164,10 +124,10 @@ class Train : public Animation {
 
 	public:
 		// Model parameters
-		BasicParameter trainSpeed_Parameter = BasicParameter(300, 1, 500);
-		BasicParameter trainLength_Parameter = BasicParameter(3, 1, 5);
-		BasicParameter trainPeriod_Parameter = BasicParameter(2000, 500, 4000);
-		BasicParameter hue_Parameter = BasicParameter(120, 0, 255);
+		BasicParameter trainSpeed_Parameter = BasicParameter("trSpe", 300, 1, 500);
+		BasicParameter trainLength_Parameter = BasicParameter("trLen", 3, 1, 5);
+		BasicParameter trainPeriod_Parameter = BasicParameter("trPer", 2000, 500, 4000);
+		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
 
 		void draw( long _deltaMs );
 
@@ -215,9 +175,9 @@ class Sparkle : public Animation {
 
 	public:
 		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter(4, 1, 255); // What's a value that's physically intuitive?
-		BasicParameter sparkleNumber_Parameter = BasicParameter(3, 1, 9);
-		BasicParameter hue_Parameter = BasicParameter(120, 0, 150);
+		BasicParameter decay_Parameter = BasicParameter("decay", 4, 1, 255); // What's a value that's physically intuitive?
+		BasicParameter sparkleNumber_Parameter = BasicParameter("spNum", 3, 1, 9);
+		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
 
 		void draw( long _deltaMs );
 		void trigger();
@@ -283,9 +243,9 @@ class Power : public Animation {
 
 	public:
 		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter(10, 1, 255); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter = BasicParameter(0, 0, NUM_LEDS);
-		BasicParameter hue_Parameter = BasicParameter(120, 0, 150);
+		BasicParameter decay_Parameter = BasicParameter("decay", 10, 1, 255); // What's a value that's physically intuitive?
+		BasicParameter level_Parameter = BasicParameter("level", 0, 0, NUM_LEDS);
+		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
 
 		void draw( long _deltaMs );
 
@@ -323,10 +283,10 @@ class RunningRainbow : public Animation {
 
 	public:
 		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter(5, 1, 255); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter = BasicParameter(0, 0, 255);
-		BasicParameter hue_Parameter = BasicParameter(120, 0, 150);
-		BasicParameter trainSpeed_Parameter = BasicParameter(10, 1, 100);
+		BasicParameter decay_Parameter = BasicParameter("decay", 5, 1, 255); // What's a value that's physically intuitive?
+		BasicParameter level_Parameter = BasicParameter("level", 0, 0, 255);
+		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
+		BasicParameter trainSpeed_Parameter = BasicParameter("trSpe", 10, 1, 100);
 
 		void draw( long _deltaMs );
 

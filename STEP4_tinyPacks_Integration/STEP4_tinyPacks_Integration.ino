@@ -202,7 +202,7 @@ void loop() {
 
             Serial.println("----------");
             Serial.println();
-            delay(10);
+//            delay(10);
             break;
 
     }

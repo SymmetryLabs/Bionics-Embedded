@@ -246,7 +246,7 @@ class Power : public Animation {
 		// Model parameters
 		BasicParameter decay_Parameter = BasicParameter("deca", 10, 1, 255); // What's a value that's physically intuitive?
 		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, NUM_LEDS);
-		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
+		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
 
 		void draw( long _deltaMs );
 

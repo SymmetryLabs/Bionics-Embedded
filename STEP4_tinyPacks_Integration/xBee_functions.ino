@@ -66,7 +66,10 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
   writer.close(); // Close the writer
 
   packed_data_length = writer.getOffset();
-  Serial.print("packed_data_length "); Serial.println(packed_data_length);
+  // Warn that the data packet is probably too big!
+  if ( packed_data_length >= 98 ) {
+    Serial.print("WARNING!  packed_data_length "); Serial.println(packed_data_length);
+  }
 }
 
 
@@ -79,14 +82,21 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
 void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParams )
 //void sendCommunications()
 {
+  
+//    long counter = millis();
     // Pack data into transmission
     packTx_Report( _type, _p, _numParams );
+//    Serial.print("packTx time = "); Serial.println( millis()-counter );
 
     // Send data to main BASE
-    xbee.send(tx);
+//    long counter = millis();
+    xbee.send(tx); // Takes about 10 ms...why?
+//    Serial.print("xbee send time = "); Serial.println( millis()-counter );
 
     // Query xBee for incoming messages
-    if (xbee.readPacket(1))
+    byte waitTime = ( _type == REPORT_AVAIL_PARAMETERS ) ? 10 : 1;
+//    Serial.print("waitTime "); Serial.println(waitTime);
+    if ( xbee.readPacket(waitTime) )
     {
         if (xbee.getResponse().isAvailable()) {
             if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
@@ -119,21 +129,21 @@ void xbeeSetup()
 {
     Serial3.begin(115200);
     xbee.setSerial(Serial3);
-    delay(1000);
+    delay(100);
 
     Serial.println("Sending controllable parameters...");
     BasicParameter *p[1] = { &power.level_Parameter }; // Need to initialize this array first, I don't know better syntax
     sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Level
-    delay(500);
+//    delay(100);
 
     p[0] = &power.hue_Parameter;
     sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Hue
-    delay(500);
+//    delay(500);
 
     p[0] = &power.decay_Parameter;
     sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Decay
 
-    delay(3000);
+//    delay(3000);
 }
 
 

@@ -124,24 +124,40 @@ void setup() {
     // Begin Serial
     Serial.begin(115200);
     // while (!Serial); // wait for Leonardo enumeration, others continue immediately
+
+    delay(1000);
     
-    Serial.println(F("Bionic Framework Setup"));
+    Serial.println();
+    Serial.println();
+    Serial.println(F("--------------------"));
+    Serial.println(F("--------------------"));
+    Serial.println(F("BIONIC FRAMEWORK START"));
+    Serial.println(F("--------------------"));
+    Serial.println(F("--------------------"));
+    Serial.println();
+
+    Serial.println(F("Bionic Framework SETUP")); Serial.println();
 
     // Start xBee
+    Serial.println("--");
     xbeeSetup();
-    Serial.println(F("xBee Setup Complete"));
+    Serial.println(F("--xBee Setup Complete")); Serial.println();
 
     // Setup MPU
+    Serial.println("--");
     MPUsetup();
-    Serial.println(F("MPU Setup Complete"));
+    Serial.println(F("--MPU Setup Complete")); Serial.println();
 
     // Setup LEDs
+    Serial.println("--");
     LEDsetup();
-    Serial.println(F("LED Setup Complete"));
+    Serial.println(F("--LED Setup Complete")); Serial.println();
 
 
-    Serial.println(F("Setup Complete"));
-    Serial.println(F("----------"));
+    Serial.println(F("SETUP Complete"));
+    Serial.println(F("--------------------"));
+    Serial.println(F("--------------------")); Serial.println();
+    delay(1000);
 }
 
 
@@ -172,6 +188,7 @@ void loop() {
             BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
             sendCommunications_Report( REPORT_DATA, p, 2);
             // getCommunications();
+            Serial.println("----------");
             Serial.println();
             break;
 

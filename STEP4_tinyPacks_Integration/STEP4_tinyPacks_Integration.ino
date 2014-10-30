@@ -96,6 +96,13 @@ struct ParamControlMessage {
 };
 
 
+
+
+// TODO put in tx16 class
+#define ACK_OPTION 0
+#define DISABLE_ACK_OPTION 1
+#define BROADCAST_OPTION 4
+
 #include "XBee.h"
 
 // xBee variables
@@ -105,14 +112,29 @@ XBee xbee = XBee();
 uint8_t packed_data[MAX_PACKED_DATA];
 int packed_data_length;
 
-// Transmission variables
-Tx16Request tx = Tx16Request(0x0001, packed_data, sizeof(packed_data)); // 16-bit addressing: Enter address of remote XBee, typically the coordinator
+/*
+Transmission variables
+Tx16Request(uint16_t addr16, uint8_t option, uint8_t *data, uint8_t dataLength, uint8_t frameId)
+
+OPTIONS (whether or not local radio retries failed tranmissions)
+    #define ACK_OPTION 0
+    #define DISABLE_ACK_OPTION 1
+    #define BROADCAST_OPTION 4
+
+FRAME ID (whether or not target radio sends confirmation)
+    #define DEFAULT_FRAME_ID 1
+    #define NO_RESPONSE_FRAME_ID 0
+*/
+
+// Everything currently sent for no retries, no ACK
+const uint16_t ADDRESS_COORDINATOR = 0x01;
+Tx16Request tx = Tx16Request( ADDRESS_COORDINATOR, DISABLE_ACK_OPTION, packed_data, sizeof(packed_data), NO_RESPONSE_FRAME_ID );
 TxStatusResponse txStatus = TxStatusResponse();
+
 
 // Receiving variables
 XBeeResponse response = XBeeResponse(); 
 Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
-uint8_t option = 0;
 
 
 // ================================================================
@@ -187,7 +209,7 @@ void loop() {
             Serial.println("-----");
             
             // LOAD INTO MESSAGE STRUCTURES?
-            getCommunications();
+            // Loop internally to collect as many messages as were sent? Maybe not necessary anymore...
             getCommunications();
             
             BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };

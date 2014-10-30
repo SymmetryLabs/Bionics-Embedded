@@ -42,7 +42,7 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
     
           char _parameterName[5];
           _p[i]->getName( _parameterName );
-          writer.putString("pName");
+          writer.putString("pNam");
           writer.putString(_parameterName);
   
           if ( _reportType == REPORT_AVAIL_PARAMETERS ) {
@@ -80,42 +80,15 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
 // ================================================================
 
 void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParams )
-//void sendCommunications()
 {
-  
-//    long counter = millis();
-    // Pack data into transmission
+
+    // Pack data into transmission (packed_data)
     packTx_Report( _type, _p, _numParams );
-//    Serial.print("packTx time = "); Serial.println( millis()-counter );
 
     // Send data to main BASE
-//    long counter = millis();
+    // long counter = millis();
     xbee.send(tx); // Takes about 10 ms...why?
-//    Serial.print("xbee send time = "); Serial.println( millis()-counter );
-
-    // Query xBee for incoming messages
-    byte waitTime = ( _type == REPORT_AVAIL_PARAMETERS ) ? 10 : 1;
-//    Serial.print("waitTime "); Serial.println(waitTime);
-    if ( xbee.readPacket(waitTime) )
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
+    // Serial.print("xbee send time = "); Serial.println( millis()-counter );
 }
 
 
@@ -239,6 +212,9 @@ void unpackRx() {
   power.hue_Parameter.setPercent(val);
 }
 
+
+
+
 // Needs to return array of responses to the model
 void getCommunications()
 {
@@ -246,38 +222,31 @@ void getCommunications()
     // Query xBee for incoming messages
     if (xbee.readPacket(1))
     {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
+      if (xbee.getResponse().isAvailable()) {
+          if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
+          {
+              Serial.println("rx16 response");
+              xbee.getResponse().getRx16Response(rx16);
 
-                // Unload into packed_data
-                byte responseLength = rx16.getDataLength();
-//                Serial.print("Response Length = "); Serial.println(responseLength);
-//                Serial.print("Printing received data ");
-                for ( byte i = 0; i < responseLength; i++ ) {
-                  packed_data[i] = rx16.getData(i);
-//                  Serial.println(packed_data[i]);
-                }
-                
-                packed_data_length = responseLength;
-//                readAndPrintElements();
-                // Need to unpacked appropriately here!
-                unpackRx();
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
+              // Unload into packed_data
+              byte responseLength = rx16.getDataLength();
+              // Serial.print("Response Length = "); Serial.println(responseLength);
+              // Serial.print("Printing received data ");
+              for ( byte i = 0; i < responseLength; i++ ) {
+                packed_data[i] = rx16.getData(i);
+                // Serial.println(packed_data[i]);
+              }
+              
+              packed_data_length = responseLength;
+              // readAndPrintElements();
+              // Need to unpacked appropriately here!
+              unpackRx();
+          }
+          else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("Tx response - WHY???");
+      }
+      else { Serial.println('xbee weird response type'); } // Not something we were expecting
     }
-    else
-    {
-        Serial.println(F("No incoming xBee messages"));
-    }
+    else { Serial.println(F("No incoming xBee messages")); }
 }
 
 

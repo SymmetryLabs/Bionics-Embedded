@@ -61,6 +61,8 @@ enum STATES state = READ_SENSORS;
 
 unsigned long lastAnimate = 0;
 
+#define NUM_ANIMATIONS 5
+
 Train train;
 Fire fire;
 Sparkle sparkle;
@@ -77,6 +79,9 @@ enum AnimationState {
 
 byte currentAnimation = POWER;
 
+//#define AUTO_ANIMATION_CHANGER
+#define animationSwitchPeriod 3000
+unsigned long timeOfLastAnimationChange = 0;
 
 // ================================================================
 // ===                    XBEE SETUP                     ===
@@ -131,6 +136,8 @@ const uint16_t ADDRESS_COORDINATOR = 0x0001;
 Tx16Request tx = Tx16Request( ADDRESS_COORDINATOR, DISABLE_ACK_OPTION, packed_data, sizeof(packed_data), NO_RESPONSE_FRAME_ID );
 // Tx16Request tx = Tx16Request( 0x0001, ACK_OPTION, packed_data, sizeof(packed_data), DEFAULT_FRAME_ID );
 TxStatusResponse txStatus = TxStatusResponse();
+unsigned long timeOfLastTransmission = 0;;
+#define transmissionPeriod 30 // 30 -> ~30fps
 
 
 // Receiving variables
@@ -181,6 +188,11 @@ void setup() {
     Serial.println(F("--------------------"));
     Serial.println(F("--------------------")); Serial.println();
     delay(1000);
+
+
+    // Initialize timers
+    timeOfLastTransmission = millis();
+    timeOfLastAnimationChange = millis();
 }
 
 
@@ -213,8 +225,12 @@ void loop() {
             // Loop internally to collect as many messages as were sent? Maybe not necessary anymore...
             getCommunications();
             
-            BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
-            sendCommunications_Report( REPORT_DATA, p, 2);
+            unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
+            if ( timeSinceLastTransmission > transmissionPeriod ) {
+                BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
+                sendCommunications_Report( REPORT_DATA, p, 2);
+                timeOfLastTransmission = millis();
+            }
 
             // ACT ON THE MESSAGES HERE?
             // IF SO, SET THE ANIMATION PARAMETERS
@@ -229,6 +245,18 @@ void loop() {
 
     state++;
 
+
+    // FOR TESTING - Animation changing timer
+    #ifdef AUTO_ANIMATION_CHANGER
+    unsigned long timeSinceLastAnimationChange = millis() - timeOfLastAnimationChange;
+    if ( timeSinceLastAnimationChange > animationSwitchPeriod ) {
+        Serial.println("ANIMATION CHANGE!");
+        currentAnimation = (currentAnimation + 1) % NUM_ANIMATIONS;
+        timeOfLastAnimationChange = millis();
+    }
+    #endif
+
+    // Delay if you want to slow down the effective framerate of the unit
     // delay(10);
 
 }

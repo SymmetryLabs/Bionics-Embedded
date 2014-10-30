@@ -86,9 +86,9 @@ void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParam
     packTx_Report( _type, _p, _numParams );
 
     // Send data to main BASE
-    // long counter = millis();
+    long counter = millis();
     xbee.send(tx); // Takes about 10 ms...why?
-    // Serial.print("xbee send time = "); Serial.println( millis()-counter );
+    Serial.print("xbee send time = "); Serial.println( millis()-counter );
 }
 
 
@@ -134,41 +134,50 @@ void unpackAndParseRx() {
   char valString[5]; 
   
   reader.setBuffer(packed_data, packed_data_length);
-  reader.next();
-  reader.getType() == TP_MAP ? reader.openList(), reader.next() : Serial.println("Error opening first list");
-  reader.isInteger() ? controlMessage = reader.getInteger(), reader.next() : Serial.println("Error control integer");
+
+  reader.getType() == TP_LIST ? reader.openList(), reader.next(), Serial.println("List opening") : Serial.println("Error opening first list");
+  reader.isInteger() ? controlMessage = reader.getInteger(), reader.next(), Serial.print("control message = "), Serial.println(controlMessage) : Serial.println("Error control integer");
   uint8_t type = reader.getType();
+  Serial.print("type "); Serial.println(type);
   switch ( type ) {
     case TP_REAL:
       valFloat = reader.getReal();
+      break;
     case TP_INTEGER:
       valInt = reader.getInteger();
+      break;
     default:
       Serial.println("Unsupported value type");
+      break;
   }
+  while (reader.close());
 
   // Handle the response here...
   switch ( controlMessage ) { // 
     case 0: // Animation change
       Serial.print("Animation change = "); Serial.println(valInt);
       currentAnimation = valInt;
+      break;
 
     case 1: // Tune parameter 1
       power.hue_Parameter.setPercent(valFloat);
       Serial.print("HueP change = "); Serial.println(valFloat);
+      break;
 
     case 2: // Tune parameter 2
       power.decay_Parameter.setPercent(valFloat);
       Serial.print("Decay change = "); Serial.println(valFloat);
+      break;
 
     case 3: // Tune parameter 3
       Serial.print("? change = "); Serial.println(valFloat);
+      break;
 
     default:
       Serial.println("Improper control message)");
+      break;
   }
   
-  while (reader.close());
 }
 
 
@@ -197,7 +206,8 @@ void getCommunications()
               }
               
               packed_data_length = responseLength;
-              // readAndPrintElements();
+
+              readAndPrintElements();
               // Need to unpacked appropriately here!
               unpackAndParseRx();
           }
@@ -273,7 +283,7 @@ void printElement() {
     
     case TP_LIST:
     {
-      Serial.println("Cannot print list");
+      Serial.println("Opening list");
       reader.openList();
       break;
     }

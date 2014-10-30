@@ -127,8 +127,9 @@ FRAME ID (whether or not target radio sends confirmation)
 */
 
 // Everything currently sent for no retries, no ACK
-const uint16_t ADDRESS_COORDINATOR = 0x01;
+const uint16_t ADDRESS_COORDINATOR = 0x0001;
 Tx16Request tx = Tx16Request( ADDRESS_COORDINATOR, DISABLE_ACK_OPTION, packed_data, sizeof(packed_data), NO_RESPONSE_FRAME_ID );
+// Tx16Request tx = Tx16Request( 0x0001, ACK_OPTION, packed_data, sizeof(packed_data), DEFAULT_FRAME_ID );
 TxStatusResponse txStatus = TxStatusResponse();
 
 
@@ -190,7 +191,7 @@ void setup() {
 
 void loop() {
 
-    // Serial.println(F("Run loop"));
+    Serial.println(F("Run loop"));
 
     switch ( state ) {
 
@@ -215,8 +216,6 @@ void loop() {
             BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
             sendCommunications_Report( REPORT_DATA, p, 2);
 
-            
-
             // ACT ON THE MESSAGES HERE?
             // IF SO, SET THE ANIMATION PARAMETERS
             // DO DECAY FIRST
@@ -224,7 +223,6 @@ void loop() {
 
             Serial.println("----------");
             Serial.println();
-//            delay(10);
             break;
 
     }

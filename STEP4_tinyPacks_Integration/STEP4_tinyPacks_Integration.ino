@@ -75,7 +75,7 @@ enum AnimationState {
 	RUNNINGRAINBOW
 };
 
-AnimationState currentAnimation = POWER;
+byte currentAnimation = POWER;
 
 
 // ================================================================

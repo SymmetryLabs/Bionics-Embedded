@@ -48,14 +48,16 @@ void LEDrun() {
 		case SPARKLE:
 		{
 			float magnitude = aaReal.getMagnitude();
+			float magnitudePercent = 1.50 * magnitude / 56599.00; // Map from 0-56599.9 -> MIN-MAX SparkleNumber
+			Serial.print("magnitudePercent "); Serial.println(magnitudePercent);
+
 			rollLPF = rollLPF * rollLPFalpha + ypr[2]*(1-rollLPFalpha);
 			Serial.print("roll LPF "); Serial.println(rollLPF);
-
 			float rollPercent = rollLPF/(M_PI/4) + 0.5;
-			sparkle.hue_Parameter.setPercent( rollPercent );
-			if ( magnitude > 8000) {
-				// Map from 0-56599.9 -> MIN-MAX SparkleNumber
-				float magnitudePercent = 1.2 * magnitude / 56599.;
+			// sparkle.hue_Parameter.setPercent( rollPercent );
+
+			// Trigger if percent high enough
+			if ( magnitudePercent > 0.1) {
 				sparkle.sparkleNumber_Parameter.setPercent(magnitudePercent);
 				sparkle.trigger();
 			}
@@ -65,7 +67,7 @@ void LEDrun() {
 
 		case POWER:
 		{
-			float magnitudeP = aaReal.getMagnitude();
+			float magnitude = aaReal.getMagnitude();
 			rollLPF = rollLPF * rollLPFalpha + ypr[1]*(1-rollLPFalpha);
 			Serial.print("roll LPF "); Serial.println(rollLPF);
 
@@ -73,8 +75,9 @@ void LEDrun() {
 //			power.hue_Parameter.setPercent( rollPercentP );
 
 			// Map from 0-56599.9 -> MIN-MAX SparkleNumber
-			float magnitudePercent = 2.5*magnitudeP / (56599.);
+			float magnitudePercent = 2.00* magnitude / (56599.);
 			if ( magnitudePercent < 0 ) magnitudePercent = 0;
+                        Serial.print("magPercent "); Serial.println(magnitudePercent);
 			power.level_Parameter.setPercent(magnitudePercent);
 			
 			power.draw(deltaMs);

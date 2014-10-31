@@ -14,7 +14,7 @@ class Animation {
 		// Draw routine, to be called every run
 		// Setting =0 makes it a pure virtual function
 		// Responsible function for changing the leds[] array
-		virtual void draw( long _deltaTime ) = 0;
+		virtual void draw( unsigned long _deltaTime ) = 0;
 };
 
 
@@ -33,19 +33,19 @@ class Fire : public Animation {
 		BasicParameter coolingParameter = BasicParameter("cool", 100, 20, 100);
 		BasicParameter sparkingParameter = BasicParameter("spar", 50, 50, 200);
 
-		void draw( long _deltaTime );
+		void draw( unsigned long _deltaTime );
 
 	private:
 		// Initialize my internal model storage variables
 		uint8_t heat[NUM_LEDS];
 
-		void runModel( long _deltaTime );
+		void runModel( unsigned long _deltaTime );
 		CRGB heatColor( uint8_t _temperature );
 
 };
 
 
-void Fire::draw (long _deltaTime) {
+void Fire::draw ( unsigned long _deltaTime ) {
 	runModel(_deltaTime);
 
 	// Push model to LEDs
@@ -59,7 +59,7 @@ void Fire::draw (long _deltaTime) {
     }
 }
 
-void Fire::runModel (long _deltaTime) {
+void Fire::runModel ( unsigned long _deltaTime ) {
 
 	// Run cooling
 	for( int i = 0; i < NUM_LEDS; i++ ) {
@@ -130,7 +130,7 @@ class Train : public Animation {
 		BasicParameter trainPeriod_Parameter = BasicParameter("perd", 2000, 500, 4000);
 		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
 
-		void draw( long _deltaMs );
+		void draw( unsigned long _deltaMs );
 
 
 	private:
@@ -143,7 +143,7 @@ class Train : public Animation {
 };
 
 
-void Train::draw ( long _deltaTime ) {
+void Train::draw ( unsigned long _deltaTime ) {
 	// Move existing trains along
 	if ( (millis()-lastMove) > trainSpeed_Parameter.getValue() ) {
 		shiftPixels();
@@ -176,27 +176,27 @@ class Sparkle : public Animation {
 
 	public:
 		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter("deca", 4, 1, 255); // What's a value that's physically intuitive?
-		BasicParameter sparkleNumber_Parameter = BasicParameter("lvl", 3, 1, 9);
+		BasicParameter decay_Parameter = BasicParameter("deca", 5, 5, 25); // What's a value that's physically intuitive?
+		BasicParameter sparkleNumber_Parameter = BasicParameter("lvl", 3, 1, 7);
 		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
 
-		void draw( long _deltaMs );
+		void draw( unsigned long _deltaMs );
 		void trigger();
 
 
 	private:
 		void newSparkles();
 
-		long lastSpark = 0;
-		long lastDimming = 0;
-		long sparkPeriod = 2000;
+		unsigned long lastSpark = 0;
+		unsigned long lastDimming = 0;
+		unsigned long sparkPeriod = 2000;
 
 		bool isRandomSparkingOn = false;
 
 };
 
 
-void Sparkle::draw ( long _deltaTime ) {
+void Sparkle::draw ( unsigned long _deltaTime ) {
 	// Decrement the brightness
 	for( int i = 0; i < NUM_LEDS; i++ ) {
 		ledsHSV[i].val = qsub8( ledsHSV[i].val, int(decay_Parameter.getValue()) );
@@ -228,9 +228,11 @@ void Sparkle::draw ( long _deltaTime ) {
 void Sparkle::trigger () {
 	Serial.print("Trigger! Percent = ");
 	Serial.println(sparkleNumber_Parameter.getPercent());
-	for ( byte sparkle = 0; sparkle < sparkleNumber_Parameter.getValue(); sparkle ++) {
-		byte pixelIndex = random(0, NUM_LEDS);
-		uint8_t sparkBrightness = 50 + random8(0, sparkleNumber_Parameter.getPercent() * 205. );
+	for ( byte sparkle = 0; sparkle < int(sparkleNumber_Parameter.getValue()); sparkle ++) {
+		byte pixelIndex = random8(0, NUM_LEDS-1);
+
+		uint8_t brightnessOffset = 150;
+		uint8_t sparkBrightness = brightnessOffset + random8(0, int( sparkleNumber_Parameter.getPercent() * (255.-brightnessOffset) ) );
 		ledsHSV[pixelIndex].setHSV( hue_Parameter.getValue(), 255, sparkBrightness );
 	}
 }
@@ -248,7 +250,7 @@ class Power : public Animation {
 		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, NUM_LEDS);
 		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
 
-		void draw( long _deltaMs );
+		void draw( unsigned long _deltaMs );
 
 	private:
 
@@ -258,7 +260,7 @@ class Power : public Animation {
 };
 
 
-void Power::draw ( long _deltaTime ) {
+void Power::draw ( unsigned long _deltaTime ) {
 	// Decrement the brightness
 	for( int i = 0; i < NUM_LEDS; i++ ) {
 		ledsHSV[i].val = qsub8( ledsHSV[i].val, int(decay_Parameter.getValue()) );
@@ -289,7 +291,7 @@ class RunningRainbow : public Animation {
 		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
 		BasicParameter trainSpeed_Parameter = BasicParameter("spd", 10, 1, 100);
 
-		void draw( long _deltaMs );
+		void draw( unsigned long _deltaMs );
 
 	private:
 
@@ -300,7 +302,7 @@ class RunningRainbow : public Animation {
 };
 
 
-void RunningRainbow::draw ( long _deltaTime ) {
+void RunningRainbow::draw ( unsigned long _deltaTime ) {
 	if ( (millis()-lastMove) > trainSpeed_Parameter.getValue() ) {
 		hue_Parameter.setValue( hue_Parameter.getValue() + 5. );
 		lastMove = millis();
@@ -318,3 +320,41 @@ void RunningRainbow::draw ( long _deltaTime ) {
 		leds[i] = ledsHSV[NUM_LEDS-1-i];
 	}
 }
+
+
+
+// ================================================================
+// ===                      NOISE ANIMATION                     ===
+// ================================================================
+/*
+class Noise : public Animation {
+
+	public:
+		// Model parameters
+		BasicParameter decay_Parameter = BasicParameter("deca", 15, 5, 25); // What's a value that's physically intuitive?
+		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, NUM_LEDS);
+		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
+
+		void draw( unsigned long _deltaMs );
+
+	private:
+
+		unsigned long lastSpark = 0;
+		unsigned long lastDimming = 0;
+
+};
+
+
+void Noise::draw ( unsigned long _deltaTime ) {
+
+
+	for ( int i = 0; i < level_Parameter.getValue(); i++ ) {
+		ledsHSV[i].val = 255;
+	}
+
+	// Push ledsHSV to leds
+	for ( int i = 0; i < NUM_LEDS; i++ ) {
+		leds[i] = ledsHSV[NUM_LEDS-1-i];
+	}
+}
+*/

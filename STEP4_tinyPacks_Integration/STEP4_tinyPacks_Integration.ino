@@ -55,6 +55,9 @@ enum STATES state = READ_SENSORS;
 #define REPORT_DATA 0
 #define REPORT_AVAIL_PARAMETERS 1
 
+
+
+
 // ================================================================
 // ===                    Animation SETUP                     ===
 // ================================================================
@@ -77,11 +80,12 @@ enum AnimationState {
 	RUNNINGRAINBOW
 };
 
-byte currentAnimation = POWER;
-
 //#define AUTO_ANIMATION_CHANGER
 #define animationSwitchPeriod 3000
 unsigned long timeOfLastAnimationChange = 0;
+
+byte currentAnimation = POWER;
+
 
 // ================================================================
 // ===                    XBEE SETUP                     ===
@@ -137,15 +141,15 @@ Tx16Request tx = Tx16Request( ADDRESS_COORDINATOR, DISABLE_ACK_OPTION, packed_da
 // Tx16Request tx = Tx16Request( 0x0001, ACK_OPTION, packed_data, sizeof(packed_data), DEFAULT_FRAME_ID );
 TxStatusResponse txStatus = TxStatusResponse();
 unsigned long timeOfLastTransmission = 0;;
-#define transmissionPeriod 30 // 30 -> ~30fps
+#define transmissionPeriod 15 // 30 -> ~30fps
 
 
 // Receiving variables
 XBeeResponse response = XBeeResponse(); 
 Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
 
-
-// #define SEND_TRANSMISSION
+// #define LIMIT_TRANSMISSION_RATE
+#define SEND_TRANSMISSION
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
@@ -229,13 +233,20 @@ void loop() {
             getCommunications();
             
             #ifdef SEND_TRANSMISSION
-            unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
-            if ( timeSinceLastTransmission > transmissionPeriod ) {
-                BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
-                sendCommunications_Report( REPORT_DATA, p, 2);
-                timeOfLastTransmission = millis();
-            }
+                #ifdef LIMIT_TRANSMISSION_RATE
+                    unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
+                    if ( timeSinceLastTransmission > transmissionPeriod ) {
+                        BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
+                        sendCommunications_Report( REPORT_DATA, p, 2);
+
+                        timeOfLastTransmission = millis();
+                    }
+                #else
+                    BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
+                    sendCommunications_Report( REPORT_DATA, p, 2);
+                #endif
             #endif
+
 
             // ACT ON THE MESSAGES HERE?
             // IF SO, SET THE ANIMATION PARAMETERS

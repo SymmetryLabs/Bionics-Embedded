@@ -117,7 +117,7 @@ struct ParamControlMessage {
 
 #define SEND_TRANSMISSION
 
-// #define LIMIT_TRANSMISSION_RATE
+const bool LIMIT_TRANSMISSION_RATE = true;
 const byte transmissionPeriod = 15; // 30 -> ~30fps
 
 // ********************************************
@@ -263,18 +263,40 @@ void loop() {
             getCommunications();
             
             #ifdef SEND_TRANSMISSION
-                #ifdef LIMIT_TRANSMISSION_RATE
-                    unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
-                    if ( timeSinceLastTransmission > transmissionPeriod ) {
-                        BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
-                        sendCommunications_Report( REPORT_DATA, p, 2);
-
-                        timeOfLastTransmission = millis();
+                BasicParameter *p[2];
+                switch (currentAnimation) {
+                    case SPARKLE:
+                    {
+                        p[0] = &sparkle.level_Parameter;
+                        p[1] = &sparkle.hue_Parameter;
+                        break;
                     }
-                #else
-                    BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
+
+                    case POWER:
+                    {
+                        p[0] = &power.level_Parameter;
+                        p[1] = &power.hue_Parameter;
+                        break;
+                    }
+
+                    case RUNNINGRAINBOW:
+                    {
+                        p[0] = &runningrainbow.level_Parameter;
+                        p[1] = &runningrainbow.hue_Parameter;
+                        break;
+                    }
+                    default:
+                    {
+                      Serial.println("ERROR!!! NEED TO ADD ANIMATION TO SEND TRANSMISSION SWITCH");
+                    }
+                }
+
+                unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
+                if ( timeSinceLastTransmission > transmissionPeriod | !LIMIT_TRANSMISSION_RATE ) {
                     sendCommunications_Report( REPORT_DATA, p, 2);
-                #endif
+
+                    timeOfLastTransmission = millis();
+                }
             #endif
 
 

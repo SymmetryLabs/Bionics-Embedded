@@ -59,7 +59,7 @@ void LEDrun() {
 
 			// Trigger if percent high enough
 			if ( magnitudePercent > 0.1) {
-				sparkle.sparkleNumber_Parameter.setPercent(magnitudePercent);
+				sparkle.level_Parameter.setPercent(magnitudePercent);
 				sparkle.trigger();
 			}
 			sparkle.draw(deltaMs);

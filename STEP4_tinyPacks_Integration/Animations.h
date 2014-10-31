@@ -177,7 +177,7 @@ class Sparkle : public Animation {
 	public:
 		// Model parameters
 		BasicParameter decay_Parameter = BasicParameter("deca", 5, 5, 25); // What's a value that's physically intuitive?
-		BasicParameter sparkleNumber_Parameter = BasicParameter("lvl", 3, 1, 7);
+		BasicParameter level_Parameter = BasicParameter("lvl", 3, 1, 7);
 		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
 
 		void draw( unsigned long _deltaMs );
@@ -227,12 +227,12 @@ void Sparkle::draw ( unsigned long _deltaTime ) {
 
 void Sparkle::trigger () {
 	Serial.print("Trigger! Percent = ");
-	Serial.println(sparkleNumber_Parameter.getPercent());
-	for ( byte sparkle = 0; sparkle < int(sparkleNumber_Parameter.getValue()); sparkle ++) {
+	Serial.println(level_Parameter.getPercent());
+	for ( byte sparkle = 0; sparkle < int(level_Parameter.getValue()); sparkle ++) {
 		byte pixelIndex = random8(0, NUM_LEDS-1);
 
 		uint8_t brightnessOffset = 150;
-		uint8_t sparkBrightness = brightnessOffset + random8(0, int( sparkleNumber_Parameter.getPercent() * (255.-brightnessOffset) ) );
+		uint8_t sparkBrightness = brightnessOffset + random8(0, int( level_Parameter.getPercent() * (255.-brightnessOffset) ) );
 		ledsHSV[pixelIndex].setHSV( hue_Parameter.getValue(), 255, sparkBrightness );
 	}
 }

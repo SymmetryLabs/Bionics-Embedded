@@ -244,7 +244,7 @@ class Power : public Animation {
 
 	public:
 		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter("deca", 10, 1, 255); // What's a value that's physically intuitive?
+		BasicParameter decay_Parameter = BasicParameter("deca", 15, 5, 25); // What's a value that's physically intuitive?
 		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, NUM_LEDS);
 		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
 

@@ -66,7 +66,7 @@ unsigned long lastAnimate = 0;
 
 #define NUM_ANIMATIONS 4
 
-Train train;
+//Train train;
 // Fire fire;
 Sparkle sparkle;
 Power power;
@@ -74,9 +74,9 @@ RunningRainbow runningrainbow;
 
 enum AnimationState {
 	// FIRE,
-	TRAIN,
-	SPARKLE,
+//	TRAIN,
 	POWER,
+        SPARKLE,
 	RUNNINGRAINBOW
 };
 

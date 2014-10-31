@@ -54,7 +54,7 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
           }
       
           writer.putString("val");
-          writer.putReal(_p[i]->getValue());
+          writer.putReal(_p[i]->getPercent());
     
         writer.close();
       }

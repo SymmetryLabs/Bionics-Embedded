@@ -177,7 +177,7 @@ class Sparkle : public Animation {
 	public:
 		// Model parameters
 		BasicParameter decay_Parameter = BasicParameter("deca", 4, 1, 255); // What's a value that's physically intuitive?
-		BasicParameter sparkleNumber_Parameter = BasicParameter("sNum", 3, 1, 9);
+		BasicParameter sparkleNumber_Parameter = BasicParameter("lvl", 3, 1, 9);
 		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
 
 		void draw( long _deltaMs );

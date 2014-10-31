@@ -30,12 +30,13 @@ void LEDrun() {
 
 	hueNow = (hueNow + 1) % 255;
 	switch ( currentAnimation ) {
-
+                /*
 		case FIRE:
 		{
 			fire.draw(deltaMs);
 			break;
 		}
+                */
 
 		case TRAIN:
 		{

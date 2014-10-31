@@ -61,16 +61,16 @@ enum STATES state = READ_SENSORS;
 
 unsigned long lastAnimate = 0;
 
-#define NUM_ANIMATIONS 5
+#define NUM_ANIMATIONS 4
 
 Train train;
-Fire fire;
+// Fire fire;
 Sparkle sparkle;
 Power power;
 RunningRainbow runningrainbow;
 
 enum AnimationState {
-	FIRE,
+	// FIRE,
 	TRAIN,
 	SPARKLE,
 	POWER,
@@ -145,6 +145,8 @@ XBeeResponse response = XBeeResponse();
 Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
 
 
+// #define SEND_TRANSMISSION
+
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
@@ -216,6 +218,7 @@ void loop() {
         case ANIMATE:
             Serial.println("-----");
             LEDrun();
+            Serial.print("Animation state = "); Serial.println(currentAnimation);
             break;
 
         case COMMUNICATE:
@@ -225,12 +228,14 @@ void loop() {
             // Loop internally to collect as many messages as were sent? Maybe not necessary anymore...
             getCommunications();
             
+            #ifdef SEND_TRANSMISSION
             unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
             if ( timeSinceLastTransmission > transmissionPeriod ) {
                 BasicParameter *p[2] = { &power.level_Parameter, &power.hue_Parameter };
                 sendCommunications_Report( REPORT_DATA, p, 2);
                 timeOfLastTransmission = millis();
             }
+            #endif
 
             // ACT ON THE MESSAGES HERE?
             // IF SO, SET THE ANIMATION PARAMETERS
@@ -257,6 +262,6 @@ void loop() {
     #endif
 
     // Delay if you want to slow down the effective framerate of the unit
-    // delay(10);
+//    delay(20);
 
 }

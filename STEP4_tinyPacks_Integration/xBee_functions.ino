@@ -156,7 +156,7 @@ void unpackAndParseRx() {
   switch ( controlMessage ) { // 
     case 0: // Animation change
       Serial.print("Animation change = "); Serial.println(valInt);
-      currentAnimation = valInt;
+      currentAnimation = constrain(valInt, 0, NUM_ANIMATIONS-1);
       break;
 
     case 1: // Tune parameter 1

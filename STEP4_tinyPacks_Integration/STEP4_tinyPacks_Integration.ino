@@ -61,10 +61,7 @@ const unsigned long animationSwitchPeriod = 5 * 1000;
 
 
 
-
-//const byte NUM_ANIMATIONS = 3;
 #define NUM_ANIMATIONS 3
-
 
 //Train train;
 // Fire fire;
@@ -73,14 +70,7 @@ Power power;
 RunningRainbow runningrainbow;
 
 // Initialize and list animation objects
-Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &runningrainbow }; // Does not work
-//Animation *animations[NUM_ANIMATIONS] = { new Sparkle, new Power, new RunningRainbow }; // Does not work
-//animations[0] = &sparkle;
-//animations[1] = &powerB;
-//animations[2] = &runningrainbow;
-//animations[0] = new Sparkle();
-//animations[1] = new Power();
-//animations[2] = new RunningRainbow();
+Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &runningrainbow };
 
 
 
@@ -128,7 +118,7 @@ struct ParamControlMessage {
 // ********************************************
 // ***************    FLAGS   *****************
 
-// #define SEND_TRANSMISSION
+#define SEND_TRANSMISSION
 
 const bool LIMIT_TRANSMISSION_RATE = true;
 const byte transmissionPeriod = 15; // 30 -> ~30fps
@@ -215,7 +205,7 @@ void setup() {
 
     // Start xBee
     Serial.println("--");
-//    xbeeSetup();
+    xbeeSetup();
     Serial.println(F("--xBee Setup Complete")); Serial.println();
 
     // Setup MPU
@@ -273,36 +263,13 @@ void loop() {
             
             // LOAD INTO MESSAGE STRUCTURES?
             // Loop internally to collect as many messages as were sent? Maybe not necessary anymore...
-//            getCommunications();
+           getCommunications();
             
             #ifdef SEND_TRANSMISSION
-                BasicParameter *p[2];
-                switch (currentAnimation) {
-                    case SPARKLE:
-                    {
-                        p[0] = &sparkle.level_Parameter;
-                        p[1] = &sparkle.hue_Parameter;
-                        break;
-                    }
-
-                    case POWER:
-                    {
-                        p[0] = &power.level_Parameter;
-                        p[1] = &power.hue_Parameter;
-                        break;
-                    }
-
-                    case RUNNINGRAINBOW:
-                    {
-                        p[0] = &runningrainbow.level_Parameter;
-                        p[1] = &runningrainbow.hue_Parameter;
-                        break;
-                    }
-                    default:
-                    {
-                      Serial.println("ERROR!!! NEED TO ADD ANIMATION TO SEND TRANSMISSION SWITCH");
-                    }
-                }
+                BasicParameter *p[2] = {
+                            &animations[currentAnimation]->level_Parameter,
+                            &animations[currentAnimation]->hue_Parameter
+                        };
 
                 unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
                 if ( timeSinceLastTransmission > transmissionPeriod | !LIMIT_TRANSMISSION_RATE ) {
@@ -338,6 +305,6 @@ void loop() {
     #endif
 
     // Delay if you want to slow down the effective framerate of the unit
-//    delay(20);
+    // delay(20);
 
 }

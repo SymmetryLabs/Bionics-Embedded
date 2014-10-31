@@ -8,6 +8,9 @@ void printParameterP( BasicParameter *_p ) {
   Serial.print("Max: "); Serial.println(_p->getMax());
 }
 
+
+
+
 // ================================================================
 // ===                    PACK FUNCTIONS                      ===
 // ================================================================
@@ -97,7 +100,7 @@ void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParam
 // ================================================================
 // ===                       XBEE SETUP                     ===
 // ================================================================
-/*
+
 void xbeeSetup()
 {
     Serial3.begin(115200);
@@ -105,21 +108,30 @@ void xbeeSetup()
     delay(100);
 
     Serial.println("Sending controllable parameters...");
-    BasicParameter *p[1];
-    *p[0] = animations[currentAnimation]->level_Parameter ; // Need to initialize this array first, I don't know better syntax
-    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Level
-//    delay(100);
+    BasicParameter *p[3] = {
+            &animations[currentAnimation]->level_Parameter,
+            &animations[currentAnimation]->hue_Parameter,
+            &animations[currentAnimation]->decay_Parameter
+          };
 
-//    p[0] = &power.hue_Parameter;
-    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Hue
-//    delay(500);
+//     Is this equivalent to below?
+//    BasicParameter *p[3];
+//    p[0] = &(animations[currentAnimation]->level_Parameter);
+//    p[1] = &(animations[currentAnimation]->hue_Parameter);
+//    p[2] = &(animations[currentAnimation]->decay_Parameter);
 
-//    p[0] = &power.decay_Parameter;
-    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Decay
+    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[0], 1 ); // Level
+    delay(500);
+
+    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[1], 1 ); // Hue
+    delay(500);
+
+    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[2], 1 ); // Decay
+    delay(500);
 
 //    delay(3000);
 }
-*/
+
 
 
 
@@ -248,56 +260,41 @@ void printElement() {
 
   switch ( type ) {
     case TP_NONE:
-    {
       Serial.println("Cannot print none");
       break;
-    }
 
     case TP_BOOLEAN:
-    {
       Serial.print("Boolean "); Serial.println(reader.getBoolean());
       break;
-    }
 
     case TP_INTEGER:
-    {
       Serial.print("Integer "); Serial.println(reader.getInteger());
       break;
-    }
 
     case TP_REAL:
-    {
       Serial.print("Real "); Serial.println(reader.getReal());
       break;
-    }
     
     case TP_STRING:
-    {
       reader.getString(text, MAX_TEXT_LENGTH);
       Serial.print("String "); Serial.println( text );
       break;
-    }
     
     case TP_BYTES:
-    {
       // Serial.print("Bytes "); Serial.println(reader.getBytes());
       Serial.println("Cannot print bytes");
       break;
-    }
     
     case TP_LIST:
-    {
       Serial.println("Opening list");
       reader.openList();
       break;
-    }
     
     case TP_MAP:
-    {
       Serial.println("Opening map");
       reader.openMap();
       break;
-    }
+
     default:
       Serial.println("ERROR! NO TYPE");
   }

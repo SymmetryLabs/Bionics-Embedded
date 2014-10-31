@@ -15,62 +15,46 @@ void LEDsetup() {
 }
 
 
-uint8_t hueNow = 0;
-
-float rollLPF = 0;
-const float rollLPFalpha = 0.960;
-
 void LEDrun() {
+
+	static float rollLPF;
+	const float rollLPRalpha = 0.960;
+
+	static float pitchLPF;
+	const float pitchLPFalpha = 0.960;
 
 	// Calculate deltaTime since last animate (animations are time dependent)
 	// This allows for non-fixed framerate running - the Teensy does its best
 	unsigned long deltaMs = millis() - lastAnimate;
 	Serial.print("dT Animation "); Serial.println(deltaMs);
 
-	hueNow = (hueNow + 1) % 255;
-
-
-
 	float magnitude = aaReal.getMagnitude();
-	// Map from 0-56599.9 -> MIN-MAX SparkleNumber
-	float magnitudePercent = 2.00* magnitude / (56599.);
+	float magnitudePercent = 2.00* magnitude / (56599.); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
 	if ( magnitudePercent < 0 ) magnitudePercent = 0;
 	Serial.print("magPercent "); Serial.println(magnitudePercent);
 
-	rollLPF = rollLPF * rollLPFalpha + ypr[1]*(1-rollLPFalpha);
+	rollLPF = rollLPF * rollLPFalpha + ypr[2]*(1-rollLPFalpha);
 	Serial.print("roll LPF "); Serial.println(rollLPF);
 	float rollPercentP = rollLPF/(M_PI/4) + 0.5;
 
+	pitchLPF = rollLPF * pitchLPFalpha + ypr[1]*(1-pitchLPFalpha);
+	Serial.print("pitch LPF "); Serial.println(rollLPF);
+	float pitchPercentP = pitchLPF/(M_PI/4) + 0.5;
 
 
+	animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+	animations[currentAnimation]->hue_Parameter.setPercent(rollPercentP);
 
-/*
+	// Run animation-specific code
 	switch ( currentAnimation ) {
-                
-		case FIRE:
-		{
-			fire.draw(deltaMs);
-			break;
-		}
-                */
-                /*
-		case TRAIN:
-		{
-			train.hue_Parameter.setValue(hueNow);
-			train.draw(deltaMs);
-			break;
-		}
-                
 
 		case SPARKLE:
 		{
 			// Trigger if percent high enough
 			if ( magnitudePercent > 0.1) {
-//				sparkle.level_Parameter.setPercent(magnitudePercent);
-                                animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
-				sparkle.trigger();
+                animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+				sparkle.trigger(); // Sooooo ghetto
 			}
-//			sparkle.draw(deltaMs);
 			break;
 		}
 
@@ -83,18 +67,9 @@ void LEDrun() {
 		{
 			break;
 		}
+		default:
+			Serial.println("ERROR!!! Running an unsupported animation from LEDrun()");
 	}
-*/
-
-
-	// animations[currentAnimation]->level_Parameter.setPercent( magnitudePercent );
-	// animations[currentAnimation]->hue_Parameter.setPercent( rollPercentP );
-    Serial.print("anim 1 decay = "); Serial.println(sparkle.decay_Parameter.getValue());
-    Serial.print("anim 2 decay = "); Serial.println(power.decay_Parameter.getValue());
-    Serial.print("anim 3 decay = "); Serial.println(runningrainbow.decay_Parameter.getValue());
-
-	float currentDecay = animations[currentAnimation]->decay_Parameter.getValue();
-	Serial.print("currentAnimation decay = "); Serial.println(currentDecay);
 
 	animations[currentAnimation]->draw( deltaMs );
 

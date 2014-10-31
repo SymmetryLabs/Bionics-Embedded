@@ -9,12 +9,18 @@ class Animation {
 
 	public:
 		// Construction
-		// Animation();
+		Animation() {}
+//		Animation() {}
 
 		// Draw routine, to be called every run
 		// Setting =0 makes it a pure virtual function
 		// Responsible function for changing the leds[] array
 		virtual void draw( unsigned long _deltaTime ) = 0;
+		// void draw( unsigned long _deltaTime ) = 0;
+
+		BasicParameter decay_Parameter = BasicParameter("deca", 0, 0, 0); // What's a value that's physically intuitive?
+		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, 0);
+		BasicParameter hue_Parameter = BasicParameter("hue", 0, 0, 0);
 };
 
 
@@ -175,10 +181,12 @@ void Train::newTrain () {
 class Sparkle : public Animation {
 
 	public:
-		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter("deca", 5, 5, 25); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter = BasicParameter("lvl", 3, 1, 7);
-		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
+		Sparkle() {
+			// Model parameters
+			decay_Parameter.setBasicParameter(5, 5, 25); // What's a value that's physically intuitive?
+			level_Parameter.setBasicParameter(3, 1, 7);
+			hue_Parameter.setBasicParameter(120, 0, 150);
+		}
 
 		void draw( unsigned long _deltaMs );
 		void trigger();
@@ -245,10 +253,12 @@ void Sparkle::trigger () {
 class Power : public Animation {
 
 	public:
-		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter("deca", 15, 5, 25); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, NUM_LEDS);
-		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
+		Power() {
+			// Model parameters
+			decay_Parameter.setBasicParameter(15, 5, 25); // What's a value that's physically intuitive?
+			level_Parameter.setBasicParameter(0, 0, NUM_LEDS);
+			hue_Parameter.setBasicParameter(120, 0, 150);
+		}
 
 		void draw( unsigned long _deltaMs );
 
@@ -285,10 +295,13 @@ void Power::draw ( unsigned long _deltaTime ) {
 class RunningRainbow : public Animation {
 
 	public:
-		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter("deca", 5, 1, 255); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, 255);
-		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 150);
+		RunningRainbow() {
+			// Model parameters
+			decay_Parameter.setBasicParameter(5, 1, 255); // What's a value that's physically intuitive?
+			level_Parameter.setBasicParameter(0, 0, 255);
+			hue_Parameter.setBasicParameter(120, 0, 150);
+		}
+
 		BasicParameter trainSpeed_Parameter = BasicParameter("spd", 10, 1, 100);
 
 		void draw( unsigned long _deltaMs );

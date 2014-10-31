@@ -97,7 +97,7 @@ void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParam
 // ================================================================
 // ===                       XBEE SETUP                     ===
 // ================================================================
-
+/*
 void xbeeSetup()
 {
     Serial3.begin(115200);
@@ -105,20 +105,21 @@ void xbeeSetup()
     delay(100);
 
     Serial.println("Sending controllable parameters...");
-    BasicParameter *p[1] = { &power.level_Parameter }; // Need to initialize this array first, I don't know better syntax
+    BasicParameter *p[1];
+    *p[0] = animations[currentAnimation]->level_Parameter ; // Need to initialize this array first, I don't know better syntax
     sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Level
 //    delay(100);
 
-    p[0] = &power.hue_Parameter;
+//    p[0] = &power.hue_Parameter;
     sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Hue
 //    delay(500);
 
-    p[0] = &power.decay_Parameter;
+//    p[0] = &power.decay_Parameter;
     sendCommunications_Report( REPORT_AVAIL_PARAMETERS, p, 1 ); // Decay
 
 //    delay(3000);
 }
-
+*/
 
 
 
@@ -160,13 +161,15 @@ void unpackAndParseRx() {
       break;
 
     case 1: // Tune parameter 1
-      power.hue_Parameter.setPercent(valFloat);
+//      power.hue_Parameter.setPercent(valFloat);
+      animations[currentAnimation]->hue_Parameter.setPercent(valFloat);
       Serial.print("HueP change = "); Serial.println(valFloat);
       break;
 
     case 2: // Tune parameter 2
       
-      power.decay_Parameter.setPercent(valFloat);
+//      power.decay_Parameter.setPercent(valFloat);
+      animations[currentAnimation]->decay_Parameter.setPercent(valFloat);
       Serial.print("Decay change = "); Serial.println(valFloat);
       break;
 

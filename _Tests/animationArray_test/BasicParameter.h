@@ -1,4 +1,4 @@
-#include <stdio.h>
+ #include <stdio.h>
 #include <string.h>
 
 // ================================================================
@@ -17,9 +17,6 @@ class BasicParameter {
 		float getMax();
 		void setValue( float _newValue );
 		void setPercent ( float _newPercent );
-		// void setMin( float _newMin );
-		// void setMax( float _newMax );
-		void setBasicParameter ( float _value, float _min, float _max );
 
 	private:
 		char name[5];
@@ -34,14 +31,6 @@ BasicParameter::BasicParameter( char *_name, float _initialValue, float _minValu
 	minValue = _minValue;
 	maxValue = _maxValue;
 }
-
-// void BasicParameter::setMin ( float _newMin ) {
-// 	minValue = _newMin;
-// }
-
-// void BasicParameter::setMax ( float _newMax ) {
-// 	maxValue = _newMax;
-// }
 
 // The copy constructor
 // BasicParameter::BasicParameter( const BasicParameter& _p ) : currentValue(_p.currentValue), minValue(_p.minValue), maxValue(_p.maxValue)
@@ -83,11 +72,4 @@ void BasicParameter::setPercent( float _newPercent ) {
 
 	float newValue = minValue + _newPercent * (maxValue-minValue);
 	currentValue = newValue;
-}
-
-
-void BasicParameter::setBasicParameter( float _newValue, float _newMin, float _newMax ) {
-  currentValue = _newValue;
-  minValue = _newMin;
-  maxValue = _newMax;
 }

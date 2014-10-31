@@ -9,7 +9,7 @@ CRGB leds[NUM_LEDS];
 CHSV ledsHSV[NUM_LEDS];
 
 // Had to move this to main file for proper dependencies...
-#include "Animations.h"
+#include "Animation.h"
 
 
 // Initial stuff for MPU
@@ -52,9 +52,9 @@ enum STATES state = READ_SENSORS;
 // ***************    FLAGS   *****************
 
 #define STARTING_ANIMATION POWER
-//#define AUTO_ANIMATION_CHANGER
+#define AUTO_ANIMATION_CHANGER
 
-const unsigned long animationSwitchPeriod = 60 * 1000;
+const unsigned long animationSwitchPeriod = 5 * 1000;
 
 // ********************************************
 // ********************************************
@@ -62,20 +62,33 @@ const unsigned long animationSwitchPeriod = 60 * 1000;
 
 
 
-const byte NUM_ANIMATIONS = 3;
+//const byte NUM_ANIMATIONS = 3;
+#define NUM_ANIMATIONS 3
 
-// Initialize and list animation objects
+
 //Train train;
 // Fire fire;
 Sparkle sparkle;
 Power power;
 RunningRainbow runningrainbow;
 
+// Initialize and list animation objects
+Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &runningrainbow }; // Does not work
+//Animation *animations[NUM_ANIMATIONS] = { new Sparkle, new Power, new RunningRainbow }; // Does not work
+//animations[0] = &sparkle;
+//animations[1] = &powerB;
+//animations[2] = &runningrainbow;
+//animations[0] = new Sparkle();
+//animations[1] = new Power();
+//animations[2] = new RunningRainbow();
+
+
+
 enum AnimationState {
 	// FIRE,
 	// TRAIN,
-	POWER,
-        SPARKLE,
+	SPARKLE,
+        POWER,
 	RUNNINGRAINBOW
 };
 
@@ -115,7 +128,7 @@ struct ParamControlMessage {
 // ********************************************
 // ***************    FLAGS   *****************
 
-#define SEND_TRANSMISSION
+// #define SEND_TRANSMISSION
 
 const bool LIMIT_TRANSMISSION_RATE = true;
 const byte transmissionPeriod = 15; // 30 -> ~30fps
@@ -202,7 +215,7 @@ void setup() {
 
     // Start xBee
     Serial.println("--");
-    xbeeSetup();
+//    xbeeSetup();
     Serial.println(F("--xBee Setup Complete")); Serial.println();
 
     // Setup MPU
@@ -260,7 +273,7 @@ void loop() {
             
             // LOAD INTO MESSAGE STRUCTURES?
             // Loop internally to collect as many messages as were sent? Maybe not necessary anymore...
-            getCommunications();
+//            getCommunications();
             
             #ifdef SEND_TRANSMISSION
                 BasicParameter *p[2];

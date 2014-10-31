@@ -1,13 +1,4 @@
-#include "BasicParameter.h"
-/*
-    10:30am 10/24/2014 - Got Train compiling and called to as an inheritance from Animation class
-    7pm                - Train runs with Basic Parameters, controllable from internal loops
-    9:35pm             - Integrated Sparkle with FastLED dimming to best abilities...no good, need to write own
-    2PM     10/26/2014 - Several animations running great.  Fixed dimming.  Moving on to xBee integration.  Several sensor running.
-    2:30PM             - xBee transmit and receive working at 15 ms / frame
-    1PM     10/27/2014 - About to integrate TinyPacks
-    1AM     10/28/2014 - Integrating TinyPacks with Xbee
-*/
+// Initial stuff for LEDs and Animations
 #include "FastLED.h"
 #define NUM_LEDS 12
 
@@ -15,9 +6,11 @@ CRGB leds[NUM_LEDS];
 CHSV ledsHSV[NUM_LEDS];
 
 // Had to move this to main file for proper dependencies...
-//#include "BasicParameter.h"
+#include "BasicParameter.h"
 #include "Animations.h"
 
+
+// Initial stuff for MPU
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
@@ -30,7 +23,7 @@ VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measur
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 
-
+// Initialize state changing variable
 enum STATES {
     READ_SENSORS,
     ANIMATE,
@@ -46,15 +39,6 @@ inline STATES& operator++(STATES& _state, int)  // <--- note -- must be a refere
 
 enum STATES state = READ_SENSORS;
 
-//enum ReportType {
-//  REPORT_DATA,
-//  REPORT_AVAIL_PARAMETERS
-//};
-//
-//enum ReportType reportType = REPORT_AVAIL_PARAMETERS;
-#define REPORT_DATA 0
-#define REPORT_AVAIL_PARAMETERS 1
-
 
 
 
@@ -62,10 +46,21 @@ enum STATES state = READ_SENSORS;
 // ===                    Animation SETUP                     ===
 // ================================================================
 
-unsigned long lastAnimate = 0;
+// ***************    FLAGS   *****************
 
-#define NUM_ANIMATIONS 4
+#define STARTING_ANIMATION POWER
+//#define AUTO_ANIMATION_CHANGER
 
+const unsigned long animationSwitchPeriod = 3000;
+
+// ********************************************
+
+
+
+
+const byte NUM_ANIMATIONS = 3;
+
+// Initialize and list animation objects
 //Train train;
 // Fire fire;
 Sparkle sparkle;
@@ -74,21 +69,23 @@ RunningRainbow runningrainbow;
 
 enum AnimationState {
 	// FIRE,
-//	TRAIN,
+	// TRAIN,
 	POWER,
         SPARKLE,
 	RUNNINGRAINBOW
 };
 
-//#define AUTO_ANIMATION_CHANGER
-#define animationSwitchPeriod 3000
 unsigned long timeOfLastAnimationChange = 0;
 
-byte currentAnimation = POWER;
+unsigned long lastAnimate = 0;
+
+byte currentAnimation = STARTING_ANIMATION;
+
+
 
 
 // ================================================================
-// ===                    XBEE SETUP                     ===
+// ===                    TINYPACKS SETUP                     ===
 // ================================================================
 
 #include <TinyPacks.h>
@@ -107,10 +104,20 @@ struct ParamControlMessage {
 
 
 
-// TODO put in tx16 class
-#define ACK_OPTION 0
-#define DISABLE_ACK_OPTION 1
-#define BROADCAST_OPTION 4
+// ================================================================
+// ===                    XBEE SETUP                     ===
+// ================================================================
+
+// ***************    FLAGS   *****************
+
+#define SEND_TRANSMISSION
+
+// #define LIMIT_TRANSMISSION_RATE
+const byte transmissionPeriod = 15; // 30 -> ~30fps
+
+// ********************************************
+
+
 
 #include "XBee.h"
 
@@ -120,6 +127,7 @@ XBee xbee = XBee();
 #define MAX_PACKED_DATA 100
 uint8_t packed_data[MAX_PACKED_DATA];
 int packed_data_length;
+
 
 /*
 Transmission variables
@@ -135,21 +143,33 @@ FRAME ID (whether or not target radio sends confirmation)
     #define NO_RESPONSE_FRAME_ID 0
 */
 
+// xBee TX options
+#define ACK_OPTION 0
+#define DISABLE_ACK_OPTION 1
+#define BROADCAST_OPTION 4
+
 // Everything currently sent for no retries, no ACK
 const uint16_t ADDRESS_COORDINATOR = 0x0001;
 Tx16Request tx = Tx16Request( ADDRESS_COORDINATOR, DISABLE_ACK_OPTION, packed_data, sizeof(packed_data), NO_RESPONSE_FRAME_ID );
-// Tx16Request tx = Tx16Request( 0x0001, ACK_OPTION, packed_data, sizeof(packed_data), DEFAULT_FRAME_ID );
 TxStatusResponse txStatus = TxStatusResponse();
 unsigned long timeOfLastTransmission = 0;;
-#define transmissionPeriod 15 // 30 -> ~30fps
+
+//enum ReportType {
+//  REPORT_DATA,
+//  REPORT_AVAIL_PARAMETERS
+//};
+//
+//enum ReportType reportType = REPORT_AVAIL_PARAMETERS;
+#define REPORT_DATA 0
+#define REPORT_AVAIL_PARAMETERS 1
 
 
 // Receiving variables
 XBeeResponse response = XBeeResponse(); 
 Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
 
-// #define LIMIT_TRANSMISSION_RATE
-#define SEND_TRANSMISSION
+
+
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===

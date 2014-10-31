@@ -56,9 +56,20 @@ float BasicParameter::getMin() { return minValue; }
 
 float BasicParameter::getMax() { return maxValue; }
 
-void BasicParameter::setValue( float _newValue ) { currentValue = _newValue; }
+void BasicParameter::setValue( float _newValue ) {
+	// Constrain incoming values
+	if ( _newValue > maxValue ) _newValue = maxValue;
+	else if ( _newValue < minValue ) _newValue = minValue;
+
+	currentValue = _newValue;
+
+}
 
 void BasicParameter::setPercent( float _newPercent ) {
+	// Constrain incoming values
+	if ( _newPercent > 1. ) _newPercent = 1.;
+	else if ( _newPercent < 0. ) _newPercent = 0.;
+
 	float newValue = minValue + _newPercent * (maxValue-minValue);
 	currentValue = newValue;
 }

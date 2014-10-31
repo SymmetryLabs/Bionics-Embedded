@@ -1,3 +1,6 @@
+// HAS TO BE AT TOP (for some reason...should figure out build order)
+#include "BasicParameter.h"
+
 // Initial stuff for LEDs and Animations
 #include "FastLED.h"
 #define NUM_LEDS 12
@@ -6,7 +9,6 @@ CRGB leds[NUM_LEDS];
 CHSV ledsHSV[NUM_LEDS];
 
 // Had to move this to main file for proper dependencies...
-#include "BasicParameter.h"
 #include "Animations.h"
 
 
@@ -46,13 +48,15 @@ enum STATES state = READ_SENSORS;
 // ===                    Animation SETUP                     ===
 // ================================================================
 
+// ********************************************
 // ***************    FLAGS   *****************
 
 #define STARTING_ANIMATION POWER
 //#define AUTO_ANIMATION_CHANGER
 
-const unsigned long animationSwitchPeriod = 3000;
+const unsigned long animationSwitchPeriod = 60 * 1000;
 
+// ********************************************
 // ********************************************
 
 
@@ -108,6 +112,7 @@ struct ParamControlMessage {
 // ===                    XBEE SETUP                     ===
 // ================================================================
 
+// ********************************************
 // ***************    FLAGS   *****************
 
 #define SEND_TRANSMISSION
@@ -115,6 +120,7 @@ struct ParamControlMessage {
 // #define LIMIT_TRANSMISSION_RATE
 const byte transmissionPeriod = 15; // 30 -> ~30fps
 
+// ********************************************
 // ********************************************
 
 
@@ -209,6 +215,10 @@ void setup() {
     LEDsetup();
     Serial.println(F("--LED Setup Complete")); Serial.println();
 
+    #ifdef AUTO_ANIMATION_CHANGER
+        Serial.println("IMPORTANT!!!  Automatic Animation Changer ENABLED");
+    #endif
+
 
     Serial.println(F("SETUP Complete"));
     Serial.println(F("--------------------"));
@@ -284,12 +294,12 @@ void loop() {
 
     // FOR TESTING - Animation changing timer
     #ifdef AUTO_ANIMATION_CHANGER
-    unsigned long timeSinceLastAnimationChange = millis() - timeOfLastAnimationChange;
-    if ( timeSinceLastAnimationChange > animationSwitchPeriod ) {
-        Serial.println("ANIMATION CHANGE!");
-        currentAnimation = (currentAnimation + 1) % NUM_ANIMATIONS;
-        timeOfLastAnimationChange = millis();
-    }
+        unsigned long timeSinceLastAnimationChange = millis() - timeOfLastAnimationChange;
+        if ( timeSinceLastAnimationChange > animationSwitchPeriod ) {
+            Serial.println("ANIMATION CHANGE!");
+            currentAnimation = (currentAnimation + 1) % NUM_ANIMATIONS;
+            timeOfLastAnimationChange = millis();
+        }
     #endif
 
     // Delay if you want to slow down the effective framerate of the unit

@@ -107,27 +107,29 @@ void xbeeSetup()
     xbee.setSerial(Serial3);
     delay(100);
 
-    Serial.println("Sending controllable parameters...");
-    BasicParameter *p[3] = {
-            &animations[currentAnimation]->level_Parameter,
-            &animations[currentAnimation]->hue_Parameter,
-            &animations[currentAnimation]->decay_Parameter
-          };
+    #ifdef SEND_INITIAL_TRANSMISSION
+      Serial.println("Sending controllable parameters...");
+      BasicParameter *p[3] = {
+              &animations[currentAnimation]->level_Parameter,
+              &animations[currentAnimation]->hue_Parameter,
+              &animations[currentAnimation]->decay_Parameter
+            };
 
-//     Is this equivalent to below?
-//    BasicParameter *p[3];
-//    p[0] = &(animations[currentAnimation]->level_Parameter);
-//    p[1] = &(animations[currentAnimation]->hue_Parameter);
-//    p[2] = &(animations[currentAnimation]->decay_Parameter);
+  //     Is this equivalent to below?
+  //    BasicParameter *p[3];
+  //    p[0] = &(animations[currentAnimation]->level_Parameter);
+  //    p[1] = &(animations[currentAnimation]->hue_Parameter);
+  //    p[2] = &(animations[currentAnimation]->decay_Parameter);
 
-    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[0], 1 ); // Level
-    delay(500);
+      sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[0], 1 ); // Level
+      delay(500);
 
-    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[1], 1 ); // Hue
-    delay(500);
+      sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[1], 1 ); // Hue
+      delay(500);
 
-    sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[2], 1 ); // Decay
-    delay(500);
+      sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[2], 1 ); // Decay
+      delay(500);
+    #endif
 
 //    delay(3000);
 }

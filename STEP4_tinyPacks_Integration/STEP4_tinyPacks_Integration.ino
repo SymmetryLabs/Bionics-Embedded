@@ -120,6 +120,7 @@ struct ParamControlMessage {
 // ********************************************
 // ***************    FLAGS   *****************
 
+// #define SEND_INITIAL_TRANSMISSION
 #define SEND_TRANSMISSION
 
 const bool LIMIT_TRANSMISSION_RATE = true;

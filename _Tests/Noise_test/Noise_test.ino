@@ -98,9 +98,6 @@ void loop() {
     ledsHSV[i] = CHSV( 120, 255, max( ledsHSV[i].val-DECAY, int(thisBrightness) ) );
     
     leds[i] = ledsHSV[i];
-
-    // You can also explore other ways to constrain the hue used, like below
-    // leds[XY(i,j)] = CHSV(ihue + (noise[j][i]>>2),255,noise[i][j]);
   }
   ihue+=1;
 

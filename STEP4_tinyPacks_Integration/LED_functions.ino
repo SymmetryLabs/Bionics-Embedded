@@ -18,7 +18,7 @@ void LEDsetup() {
 void LEDrun() {
 
 	static float rollLPF;
-	const float rollLPRalpha = 0.960;
+	const float rollLPFalpha = 0.960;
 
 	static float pitchLPF;
 	const float pitchLPFalpha = 0.960;

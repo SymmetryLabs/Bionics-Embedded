@@ -339,35 +339,60 @@ void RunningRainbow::draw ( unsigned long _deltaTime ) {
 // ================================================================
 // ===                      NOISE ANIMATION                     ===
 // ================================================================
-/*
+
 class Noise : public Animation {
 
 	public:
-		// Model parameters
-		BasicParameter decay_Parameter = BasicParameter("deca", 15, 5, 25); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, NUM_LEDS);
-		BasicParameter hue_Parameter = BasicParameter("hue", 120, 0, 255);
+		Noise() {
+			// Model parameters
+			decay_Parameter.setBasicParameter(5, 1, 255); // What's a value that's physically intuitive?
+			level_Parameter.setBasicParameter(0, 0, 255);
+			hue_Parameter.setBasicParameter(120, 0, 150);
+			x = random16();
+			y = random16();
+			z = random16();
+		}
 
 		void draw( unsigned long _deltaMs );
 
 	private:
+		uint16_t speed = 15;
+		uint16_t scale = 3500;
+		uint8_t SHIFT_BRIGHTNESS = 120;
+		uint8_t SHIFT_SATURATION = 50;
+		uint8_t noise[NUM_LEDS];
 
-		unsigned long lastSpark = 0;
-		unsigned long lastDimming = 0;
+		uint16_t x;
+		uint16_t y;
+		uint16_t z;
 
+		void fillnoise8();
 };
 
+// Fill the x/y array of 8-bit noise values using the inoise8 function.
+void Noise::fillnoise8() {
+  for(int i = 0; i < NUM_LEDS; i++) {
+    int ioffset = scale * i;
+    noise[i] = inoise8( x + ioffset, 0 , z );
+  }
+  z += speed;
+}
 
 void Noise::draw ( unsigned long _deltaTime ) {
 
+	fillnoise8();
 
-	for ( int i = 0; i < level_Parameter.getValue(); i++ ) {
-		ledsHSV[i].val = 255;
-	}
+
 
 	// Push ledsHSV to leds
 	for ( int i = 0; i < NUM_LEDS; i++ ) {
-		leds[i] = ledsHSV[NUM_LEDS-1-i];
+		uint8_t noiseBrightness = map( constrain( noise[i]-SHIFT_BRIGHTNESS, 0, 255 ),
+                                  		0, (255-SHIFT_BRIGHTNESS), 0, 255 );
+		uint8_t thisBrightness = noiseBrightness;
+
+//		ledsHSV[i] = CHSV( 120, 255, max( ledsHSV[i].val-DECAY, int(thisBrightness) ) );
+		ledsHSV[i] = CHSV( 120, 255, int(thisBrightness) );
+		leds[i] = ledsHSV[i];
 	}
 }
-*/
+

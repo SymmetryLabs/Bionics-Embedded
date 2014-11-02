@@ -77,6 +77,9 @@ void fillnoise8() {
 
 void loop() {
   static uint8_t ihue=0;
+  
+  scale = 3500. * level_Parameter.getPercent() + 10;
+  
   fillnoise8();
   for(int i = 0; i < NUM_LEDS; i++) {
     // We use the value at the (i,j) coordinate in the noise

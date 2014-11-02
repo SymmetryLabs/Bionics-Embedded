@@ -183,9 +183,9 @@ class Sparkle : public Animation {
 	public:
 		Sparkle() {
 			// Model parameters
-			decay_Parameter.setBasicParameter(5, 5, 25); // What's a value that's physically intuitive?
-			level_Parameter.setBasicParameter(3, 1, 7);
-			hue_Parameter.setBasicParameter(120, 0, 150);
+			decay_Parameter.setBasicParameter(8, 5, 25); // What's a value that's physically intuitive?
+			level_Parameter.setBasicParameter(3, 1, 11);
+			hue_Parameter.setBasicParameter(150, 120, 255);
 		}
 
 		void draw( unsigned long _deltaMs );
@@ -197,9 +197,9 @@ class Sparkle : public Animation {
 
 		unsigned long lastSpark = 0;
 		unsigned long lastDimming = 0;
-		unsigned long sparkPeriod = 2000;
+		unsigned long sparkPeriod = 200;
 
-		bool isRandomSparkingOn = false;
+		bool isRandomSparkingOn = true;
 
 };
 
@@ -207,22 +207,23 @@ class Sparkle : public Animation {
 void Sparkle::draw ( unsigned long _deltaTime ) {
 	// Decrement the brightness
 	for( int i = 0; i < NUM_LEDS; i++ ) {
+                uint8_t decrement;
+//                if ( ledsHSV[i].val > 200 ) decrement = decay_Parameter.getValue();
+//                else if ( ledsHSV[i].val > 150 ) decrement = decay_Parameter.getValue()*2/3;
+//                else if ( ledsHSV[i].val > 50 ) decrement = decay_Parameter.getValue()/3;
 		ledsHSV[i].val = qsub8( ledsHSV[i].val, int(decay_Parameter.getValue()) );
+		ledsHSV[i].val = qsub8( ledsHSV[i].val, decrement );
 		ledsHSV[i].hue = hue_Parameter.getValue();
 	}
-	// for( int i = 0; i < NUM_LEDS; i++ ) { ledsHSV[i].val-=int(decay_Parameter.getValue()); }
-	// if( (millis()-lastDimming) > decay_Parameter.getValue() ) {
-	// 	for( int i = 0; i < NUM_LEDS; i++ ) {
-	// 		leds[i].val = leds[i].val - 1;
-	// 	}
-	// 	lastDimming = millis();
-	// }
 
 	// Trigger random sparkles
 	if ( isRandomSparkingOn ) {
 		if ( (millis()-lastSpark) > sparkPeriod ) {
+                        level_Parameter.setValue(random(1,3));
 			trigger();
+                        level_Parameter.setPercent(0);
 			lastSpark = millis();
+                        sparkPeriod = random(100, 300);
 		}
 	}
 
@@ -239,8 +240,8 @@ void Sparkle::trigger () {
 	for ( byte sparkle = 0; sparkle < int(level_Parameter.getValue()); sparkle ++) {
 		byte pixelIndex = random8(0, NUM_LEDS-1);
 
-		uint8_t brightnessOffset = 150;
-		uint8_t sparkBrightness = brightnessOffset + random8(0, int( level_Parameter.getPercent() * (255.-brightnessOffset) ) );
+		uint8_t brightnessOffset = 25;
+		uint8_t sparkBrightness = brightnessOffset + random(0, int( level_Parameter.getPercent() * (255.-brightnessOffset) ) );
 		ledsHSV[pixelIndex].setHSV( hue_Parameter.getValue(), 255, sparkBrightness );
 	}
 }
@@ -255,9 +256,9 @@ class Power : public Animation {
 	public:
 		Power() {
 			// Model parameters
-			decay_Parameter.setBasicParameter(15, 5, 25); // What's a value that's physically intuitive?
+			decay_Parameter.setBasicParameter(25, 5, 25); // What's a value that's physically intuitive?
 			level_Parameter.setBasicParameter(0, 0, NUM_LEDS);
-			hue_Parameter.setBasicParameter(120, 0, 150);
+			hue_Parameter.setBasicParameter(200, 120, 255);
 		}
 
 		void draw( unsigned long _deltaMs );
@@ -335,7 +336,7 @@ void RunningRainbow::draw ( unsigned long _deltaTime ) {
 }
 
 
-
+/*
 // ================================================================
 // ===                      NOISE ANIMATION                     ===
 // ================================================================
@@ -356,9 +357,10 @@ class Noise : public Animation {
 		void draw( unsigned long _deltaMs );
 
 	private:
-		uint16_t speed = 15;
-		uint16_t scale = 3500;
-		uint8_t SHIFT_BRIGHTNESS = 120;
+		uint16_t speedy = 10;
+//		uint16_t scale = 3500;
+		uint16_t scale = 2000;
+		uint8_t SHIFT_BRIGHTNESS = 10;
 		uint8_t SHIFT_SATURATION = 50;
 		uint8_t noise[NUM_LEDS];
 
@@ -375,14 +377,18 @@ void Noise::fillnoise8() {
     int ioffset = scale * i;
     noise[i] = inoise8( x + ioffset, 0 , z );
   }
-  z += speed;
+  z += speedy;
 }
 
 void Noise::draw ( unsigned long _deltaTime ) {
 
+//	scale = 2000. * level_Parameter.getPercent()+1;
+	speedy = 50. * level_Parameter.getPercent()+5;
+//        Serial.print("Noise SCALE = "); Serial.println(scale);
+        Serial.print("Noise SPEED = "); Serial.println(speedy);
+
+
 	fillnoise8();
-
-
 
 	// Push ledsHSV to leds
 	for ( int i = 0; i < NUM_LEDS; i++ ) {
@@ -395,4 +401,4 @@ void Noise::draw ( unsigned long _deltaTime ) {
 		leds[i] = ledsHSV[i];
 	}
 }
-
+*/

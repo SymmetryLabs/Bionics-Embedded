@@ -52,7 +52,7 @@ enum STATES state = READ_SENSORS;
 // ***************    FLAGS   *****************
 
 #define STARTING_ANIMATION POWER
-#define AUTO_ANIMATION_CHANGER
+// #define AUTO_ANIMATION_CHANGER
 
 const unsigned long animationSwitchPeriod = 5 * 1000;
 
@@ -61,27 +61,27 @@ const unsigned long animationSwitchPeriod = 5 * 1000;
 
 
 
-#define NUM_ANIMATIONS 4
+#define NUM_ANIMATIONS 2
 
 //Train train;
 // Fire fire;
 Sparkle sparkle;
 Power power;
-RunningRainbow runningrainbow;
-Noise noise;
+//RunningRainbow runningrainbow;
+// Noise noise;
 
 // Initialize and list animation objects
-Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &runningrainbow, &noise };
+Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power };
 
 
 
 enum AnimationState {
-	// FIRE,
-	// TRAIN,
-	SPARKLE,
-        POWER,
-	RUNNINGRAINBOW,
-        NOISE
+    // FIRE,
+    // TRAIN,
+    SPARKLE,
+    POWER
+//    RUNNINGRAINBOW
+    // NOISE
 };
 
 unsigned long timeOfLastAnimationChange = 0;
@@ -123,7 +123,7 @@ struct ParamControlMessage {
 // #define SEND_INITIAL_TRANSMISSION
 #define SEND_TRANSMISSION
 
-const bool LIMIT_TRANSMISSION_RATE = true;
+const bool LIMIT_TRANSMISSION_RATE = false;
 const byte transmissionPeriod = 15; // 30 -> ~30fps
 
 // ********************************************
@@ -269,6 +269,7 @@ void loop() {
            getCommunications();
             
             #ifdef SEND_TRANSMISSION
+//                Serial.println("Sending transmission!");
                 BasicParameter *p[2] = {
                             &animations[currentAnimation]->level_Parameter,
                             &animations[currentAnimation]->hue_Parameter

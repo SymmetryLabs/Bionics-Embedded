@@ -33,7 +33,7 @@ void LEDrun() {
 
 	float magnitude = aaReal.getMagnitude();
 //	float magnitudePercent = 2.50*( magnitude-1000.) / (56599.-1000.); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
-	float magnitudePercent = ( magnitude-500. ) / (20000.); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
+	float magnitudePercent = ( magnitude-1000.00 ) / (30000.00); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
 	if ( magnitudePercent < 0 ) magnitudePercent = 0;
         else if ( magnitudePercent > 1 ) magnitudePercent = 1;
 	Serial.print("magPercent "); Serial.println(magnitudePercent);
@@ -48,7 +48,7 @@ void LEDrun() {
 
 
 	animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
-	animations[currentAnimation]->hue_Parameter.setPercent(rollPercentP);
+//	animations[currentAnimation]->hue_Parameter.setPercent(rollPercentP);
 
 	// Run animation-specific code
 	switch ( currentAnimation ) {
@@ -57,7 +57,7 @@ void LEDrun() {
 		{
 			// Trigger if percent high enough
 			if ( magnitudePercent > 0.2) {
-                animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+                              animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
 				sparkle.trigger(); // Sooooo ghetto
 			}
 			break;
@@ -73,19 +73,19 @@ void LEDrun() {
 			break;
 		}
 
-                case NOISE:
-                {
-                  magLPF = magLPF * magLPFalpha + magnitude*(1-magLPFalpha);
-          	  Serial.print("mag LPF "); Serial.println(magLPF);
-        	  float magPercentP = (magnitude) / (56599.);
-        animations[currentAnimation]->level_Parameter.setPercent(magPercentP);
-                   
-                  break;
-                }
-                */
+		case NOISE:
+		{
+			magLPF = magLPF * magLPFalpha + magnitude*(1-magLPFalpha);
+			Serial.print("mag LPF "); Serial.println(magLPF);
+			float magPercentP = (magnitude) / (56599.);
+			animations[currentAnimation]->level_Parameter.setPercent(magPercentP);
+			break;
+		}
+		*/
 		default:
 			Serial.println("ERROR!!! Running an unsupported animation from LEDrun()");
 	}
+
 
 	animations[currentAnimation]->draw( deltaMs );
 

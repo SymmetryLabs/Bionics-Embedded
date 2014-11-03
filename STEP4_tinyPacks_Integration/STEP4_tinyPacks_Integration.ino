@@ -51,10 +51,10 @@ enum STATES state = READ_SENSORS;
 // ********************************************
 // ***************    FLAGS   *****************
 
-#define STARTING_ANIMATION POWER
-// #define AUTO_ANIMATION_CHANGER
+#define STARTING_ANIMATION SPARKLE
+ #define AUTO_ANIMATION_CHANGER
 
-const unsigned long animationSwitchPeriod = 5 * 1000;
+const unsigned long animationSwitchPeriod = 180 * 1000;
 
 // ********************************************
 // ********************************************
@@ -67,6 +67,7 @@ const unsigned long animationSwitchPeriod = 5 * 1000;
 // Fire fire;
 Sparkle sparkle;
 Power power;
+//DualPower dualpower;
 //RunningRainbow runningrainbow;
 // Noise noise;
 
@@ -80,6 +81,7 @@ enum AnimationState {
     // TRAIN,
     SPARKLE,
     POWER
+//    DUALPOWER
 //    RUNNINGRAINBOW
     // NOISE
 };

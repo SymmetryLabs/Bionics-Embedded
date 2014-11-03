@@ -184,8 +184,8 @@ class Sparkle : public Animation {
 		Sparkle() {
 			// Model parameters
 			decay_Parameter.setBasicParameter(8, 5, 25); // What's a value that's physically intuitive?
-			level_Parameter.setBasicParameter(3, 1, 11);
-			hue_Parameter.setBasicParameter(150, 120, 255);
+			level_Parameter.setBasicParameter(3, 1, 7);
+			hue_Parameter.setBasicParameter(150, 80, 200);
 		}
 
 		void draw( unsigned long _deltaMs );
@@ -199,7 +199,9 @@ class Sparkle : public Animation {
 		unsigned long lastDimming = 0;
 		unsigned long sparkPeriod = 200;
 
-		bool isRandomSparkingOn = true;
+                unsigned long sparkBarrier = 300;
+
+		bool isRandomSparkingOn = false;
 
 };
 
@@ -207,13 +209,15 @@ class Sparkle : public Animation {
 void Sparkle::draw ( unsigned long _deltaTime ) {
 	// Decrement the brightness
 	for( int i = 0; i < NUM_LEDS; i++ ) {
-                uint8_t decrement;
+                // uint8_t decrement;
 //                if ( ledsHSV[i].val > 200 ) decrement = decay_Parameter.getValue();
 //                else if ( ledsHSV[i].val > 150 ) decrement = decay_Parameter.getValue()*2/3;
 //                else if ( ledsHSV[i].val > 50 ) decrement = decay_Parameter.getValue()/3;
-		ledsHSV[i].val = qsub8( ledsHSV[i].val, int(decay_Parameter.getValue()) );
-		ledsHSV[i].val = qsub8( ledsHSV[i].val, decrement );
+		ledsHSV[i].val = qsub8( ledsHSV[i].val, decay_Parameter.getValue() );
+		// ledsHSV[i].val = qsub8( ledsHSV[i].val, decrement );
 		ledsHSV[i].hue = hue_Parameter.getValue();
+//		ledsHSV[i].hue = 200;
+		ledsHSV[i].sat = 200;
 	}
 
 	// Trigger random sparkles
@@ -223,7 +227,7 @@ void Sparkle::draw ( unsigned long _deltaTime ) {
 			trigger();
                         level_Parameter.setPercent(0);
 			lastSpark = millis();
-                        sparkPeriod = random(100, 300);
+                        sparkPeriod = random(100, 500);
 		}
 	}
 
@@ -235,15 +239,21 @@ void Sparkle::draw ( unsigned long _deltaTime ) {
 
 
 void Sparkle::trigger () {
+  if ( millis() - lastSpark > sparkBarrier )
 	Serial.print("Trigger! Percent = ");
 	Serial.println(level_Parameter.getPercent());
 	for ( byte sparkle = 0; sparkle < int(level_Parameter.getValue()); sparkle ++) {
 		byte pixelIndex = random8(0, NUM_LEDS-1);
 
-		uint8_t brightnessOffset = 25;
+		uint8_t brightnessOffset = 80;
 		uint8_t sparkBrightness = brightnessOffset + random(0, int( level_Parameter.getPercent() * (255.-brightnessOffset) ) );
-		ledsHSV[pixelIndex].setHSV( hue_Parameter.getValue(), 255, sparkBrightness );
+		ledsHSV[pixelIndex].val = max( sparkBrightness, ledsHSV[pixelIndex].val );
+                if ( pixelIndex > 0 && pixelIndex < NUM_LEDS-1 )  {
+                  ledsHSV[pixelIndex-1].val = max( sparkBrightness/6, ledsHSV[pixelIndex-1].val );
+                  ledsHSV[pixelIndex+1].val = max( sparkBrightness/6, ledsHSV[pixelIndex+1].val );
+                }
 	}
+        lastSpark = millis();
 }
 
 
@@ -258,7 +268,7 @@ class Power : public Animation {
 			// Model parameters
 			decay_Parameter.setBasicParameter(25, 5, 25); // What's a value that's physically intuitive?
 			level_Parameter.setBasicParameter(0, 0, NUM_LEDS);
-			hue_Parameter.setBasicParameter(200, 120, 255);
+			hue_Parameter.setBasicParameter(150, 120, 255); // Trip is 200
 		}
 
 		void draw( unsigned long _deltaMs );
@@ -336,7 +346,7 @@ void RunningRainbow::draw ( unsigned long _deltaTime ) {
 }
 
 
-/*
+
 // ================================================================
 // ===                      NOISE ANIMATION                     ===
 // ================================================================
@@ -383,7 +393,7 @@ void Noise::fillnoise8() {
 void Noise::draw ( unsigned long _deltaTime ) {
 
 //	scale = 2000. * level_Parameter.getPercent()+1;
-	speedy = 50. * level_Parameter.getPercent()+5;
+	// speedy = 50. * level_Parameter.getPercent()+5;
 //        Serial.print("Noise SCALE = "); Serial.println(scale);
         Serial.print("Noise SPEED = "); Serial.println(speedy);
 
@@ -401,4 +411,48 @@ void Noise::draw ( unsigned long _deltaTime ) {
 		leds[i] = ledsHSV[i];
 	}
 }
-*/
+
+
+
+
+// ================================================================
+// ===                   DUAL POWER BAR ANIMATION                    ===
+// ================================================================
+
+class DualPower : public Animation {
+
+	public:
+		DualPower() {
+			// Model parameters
+			decay_Parameter.setBasicParameter(35, 5, 35); // What's a value that's physically intuitive?
+			level_Parameter.setBasicParameter(0, 0, NUM_LEDS);
+			hue_Parameter.setBasicParameter(200, 120, 255);
+		}
+
+		void draw( unsigned long _deltaMs );
+
+};
+
+
+void DualPower::draw ( unsigned long _deltaTime ) {
+	// Decrement the brightness
+	for( int i = 0; i < NUM_LEDS; i++ ) {
+		ledsHSV[i].val = qsub8( ledsHSV[i].val, int(decay_Parameter.getValue()) );
+		ledsHSV[i].sat = 200;
+	}
+
+	for ( int i = 0; i < level_Parameter.getValue()/2; i++ ) {
+		ledsHSV[i].val = 255;
+		ledsHSV[i].hue = hue_Parameter.getValue();
+	}
+	for ( int i = NUM_LEDS-1; i > NUM_LEDS-1-level_Parameter.getValue()/2; i-- ) {
+		ledsHSV[i].val = 255;
+		byte hueTop = hue_Parameter.getValue() - 130;
+		ledsHSV[i].hue = hueTop;
+	}
+
+	// Push ledsHSV to leds
+	for ( int i = 0; i < NUM_LEDS; i++ ) {
+		leds[i] = ledsHSV[NUM_LEDS-1-i];
+	}
+}

@@ -70,7 +70,9 @@ float euler[3];         // [psi, theta, phi]    Euler angle container
 
 
 // For Calibration
-long offsets[6] = { 0, 0, 0, 0, 0, 0 };
+//long offsets[6] = { 0, 0, 0, 0, 0, 0 };
+long offsets[6] = { -6046, 832, 2391, 0, 0, 0 };
+
                     
 enum OFFSET_TYPE {
     ACCEL_X,
@@ -148,7 +150,7 @@ void MPUsetup() {
 
 
 const int MAX_ACCEPTABLE_ERROR = 50;
-const byte MAX_ERROR_COUNTS = 15;
+const byte MAX_ERROR_COUNTS = 20;
 const byte MAX_OFFSET_ITERATIONS = 10;
 
 /*

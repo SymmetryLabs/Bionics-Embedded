@@ -13,7 +13,7 @@ CHSV ledsHSV[NUM_LEDS];
 
 
 // Initial stuff for MPU
-//#define DEBUG
+#define DEBUG
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
@@ -212,6 +212,11 @@ void setup() {
 
     Serial.println(F("Bionic Framework SETUP")); Serial.println();
 
+    // Setup LEDs
+    Serial.println("--");
+    LEDsetup();
+    Serial.println(F("--LED Setup Complete")); Serial.println();
+
     // Start xBee
     Serial.println("--");
     xbeeSetup();
@@ -219,13 +224,10 @@ void setup() {
 
     // Setup MPU
     Serial.println("--");
+    LEDS.showColor(CRGB::Red);
     MPUsetup();
+    LEDS.showColor(CRGB::Black);
     Serial.println(F("--MPU Setup Complete")); Serial.println();
-
-    // Setup LEDs
-    Serial.println("--");
-    LEDsetup();
-    Serial.println(F("--LED Setup Complete")); Serial.println();
 
     #ifdef AUTO_ANIMATION_CHANGER
         Serial.println("IMPORTANT!!!  Automatic Animation Changer ENABLED");
@@ -235,7 +237,14 @@ void setup() {
     Serial.println(F("SETUP Complete"));
     Serial.println(F("--------------------"));
     Serial.println(F("--------------------")); Serial.println();
-    delay(1000);
+    LEDS.showColor(CRGB::Green);
+    delay(250);
+    LEDS.showColor(CRGB::Black);
+    delay(250);
+    LEDS.showColor(CRGB::Green);
+    delay(250);
+    LEDS.showColor(CRGB::Black);
+    delay(250);
 
 
     // Initialize timers

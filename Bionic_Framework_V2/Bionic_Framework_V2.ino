@@ -13,6 +13,7 @@ CHSV ledsHSV[NUM_LEDS];
 
 
 // Initial stuff for MPU
+//#define DEBUG
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
@@ -23,6 +24,9 @@ CHSV ledsHSV[NUM_LEDS];
 
 VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measurements
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
+
+
+
 
 
 // Initialize state changing variable

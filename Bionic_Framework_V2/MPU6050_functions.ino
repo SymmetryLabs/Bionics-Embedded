@@ -69,6 +69,20 @@ float euler[3];         // [psi, theta, phi]    Euler angle container
 // float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 
+// For Calibration
+long offsets[6] = { 0, 0, 0, 0, 0, 0 };
+                    
+enum OFFSET_TYPE {
+    ACCEL_X,
+    ACCEL_Y,
+    ACCEL_Z,
+    GYRO_X,
+    GYRO_Y,
+    GYRO_Z
+};
+
+
+
 // ================================================================
 // ===                      INITIAL SETUP                       ===
 // ================================================================
@@ -90,26 +104,17 @@ void MPUsetup() {
     Serial.println(F("Testing device connections..."));
     Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
-    // wait for ready
-    /*
-    Serial.println(F("\nSend any character to begin DMP programming and demo: "));
-    while (Serial.available() && Serial.read()); // empty buffer
-    while (!Serial.available());                 // wait for data
-    while (Serial.available() && Serial.read()); // empty buffer again
-    */
-
     // load and configure the DMP
     Serial.println(F("Initializing DMP..."));
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset(220);
-    mpu.setYGyroOffset(76);
-    mpu.setZGyroOffset(-85);
-    mpu.setYAccelOffset(600); // Calibrated 10/30/2014 to 200
-//    mpu.setZAccelOffset(600); // 1688 factory default for my test chip; Calibrated 10/30/2014 to 600
-//    mpu.setZAccelOffset(1800);
-        mpu.setZAccelOffset(1000);
+    mpu.setXGyroOffset( offsets[GYRO_X] );
+    mpu.setYGyroOffset( offsets[GYRO_Y] );
+    mpu.setZGyroOffset( offsets[GYRO_Z] );
+    mpu.setXAccelOffset( offsets[ACCEL_X] );
+    mpu.setYAccelOffset( offsets[ACCEL_Y] );
+    mpu.setZAccelOffset( offsets[ACCEL_Z] );
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
@@ -134,8 +139,112 @@ void MPUsetup() {
         Serial.print(devStatus);
         Serial.println(F(")"));
     }
+
+    Serial.println("Begin MPU Calibration...");
+    calibrateAccelerations();
+    Serial.println("MPU Calibration COMPLETE");
+
 }
 
+
+const int MAX_ACCEPTABLE_ERROR = 50;
+const byte MAX_ERROR_COUNTS = 15;
+const byte MAX_OFFSET_ITERATIONS = 10;
+
+/*
+// Ideally everything can be vectorized and the proper functions passed...makes for shorter code
+// But I don't know how so refer to the following in the meantime
+void calibrateMPU() {
+    for ( byte i=0; i < sizeof(offsets); i++ ) {
+
+        int sum = 0;
+        byte averageCount = 0;
+        int average = 0;
+
+        // Average the current reading together for a bit
+        while( averageCount < maxAverageCounts ) {
+            MPUread();
+            int currentError = aaReal.
+        }
+
+
+        // Based on that average, subtract the current offset
+        // Exit after max attempts or error is within acceptable range
+
+
+    }
+}
+*/
+
+
+void calibrateAccelerations() {
+
+    byte offsetIteration = 0;
+    int averageError = 0;
+    
+    do {
+      averageError = calculateAverageError( &aaReal.x );
+      Serial.print("Average Error = "); Serial.println(averageError);
+      mpu.setXAccelOffset( offsets[ACCEL_X] -= averageError/(offsetIteration+1) );
+      Serial.print("Current X Offset = "); Serial.println(offsets[ACCEL_X]); Serial.println();
+      offsetIteration++;
+    } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
+    Serial.print("Final X offset = "); Serial.print(offsets[ACCEL_X]);
+    Serial.print(" with Final Error = "); Serial.println(averageError); Serial.println();
+
+
+    offsetIteration = 0;
+    averageError = 0;
+    do {
+      averageError = calculateAverageError( &aaReal.y );
+      Serial.print("Average Error = "); Serial.println(averageError);
+      mpu.setYAccelOffset( offsets[ACCEL_Y] -= averageError/(offsetIteration+1) );
+      Serial.print("Current Y Offset = "); Serial.println(offsets[ACCEL_Y]); Serial.println();
+      offsetIteration++;
+    } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
+    Serial.print("Final Y offset = "); Serial.print(offsets[ACCEL_Y]);
+    Serial.print(" with Final Error = "); Serial.println(averageError); Serial.println();
+
+
+    offsetIteration = 0;
+    averageError = 0;
+    do {
+      averageError = calculateAverageError( &aaReal.z );
+      Serial.print("Average Error = "); Serial.println(averageError);
+      mpu.setZAccelOffset( offsets[ACCEL_Z] -= averageError/(offsetIteration+1) );
+      Serial.print("Current Z Offset = "); Serial.println(offsets[ACCEL_Z]); Serial.println();
+      offsetIteration++;
+    } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
+    Serial.print("Final Z offset = "); Serial.print(offsets[ACCEL_Z]);
+    Serial.print(" with Final Error = "); Serial.println(averageError); Serial.println();
+
+  Serial.println("Calibration COMPLETE");
+  Serial.print("xOffset = "); Serial.print(offsets[ACCEL_X]);
+  Serial.print("  yOffset = "); Serial.print(offsets[ACCEL_Y]);
+  Serial.print("  zOffset = "); Serial.println(offsets[ACCEL_Z]);
+  Serial.println();
+
+}
+
+
+
+int calculateAverageError( int16_t *_measurement ) {
+
+    int sumError = 0;
+    byte errorCount = 0;
+    int averageError;
+
+    // Average the current reading together for a bit
+    while( errorCount < MAX_ERROR_COUNTS ) {
+        MPUread();
+        int16_t *currentError = _measurement;
+        sumError += *currentError;
+        errorCount++;
+    }
+    averageError = sumError / errorCount;
+
+    return averageError;
+}
 
 
 // ================================================================
@@ -156,7 +265,7 @@ void MPUread() {
     // check for overflow (this should never happen unless our code is too inefficient)
     if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
         // reset so we can continue cleanly
-        Serial.println(F("Eep!"));
+        Serial.println(F("FIFO Overflow, resetting..."));
         mpu.resetFIFO();
 
     // otherwise, check for DMP data ready interrupt (this should happen frequently)

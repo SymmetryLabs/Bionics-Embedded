@@ -1,57 +1,205 @@
-#include <TinyPacks.h>
+void printParameterP( BasicParameter *_p ) {
+  char name[5];
+  _p->getName(name);
+  // for ( byte i = 0; i < sizeof(name); i++ ) Serial.println(name[i], HEX);
+  Serial.print("Name: "); Serial.println(name);
+  Serial.print("Val: "); Serial.println(_p->getValue());
+  Serial.print("Min: "); Serial.println(_p->getMin());
+  Serial.print("Max: "); Serial.println(_p->getMax());
+}
 
-PackWriter writer;
-PackReader reader;
 
-#define MAX_TEXT_LENGTH 32
-char text[MAX_TEXT_LENGTH] = "";
-
-// enum MSG_TYPE {
-//     UNIT_PARAM_CONTROL = 0,
-//     UNIT_ANIM_CONTROL = 1
-// };
-
-struct ParamControlMessage {
-  char key[16];
-  float val;
-};
 
 
 // ================================================================
-// ===                    XBEE SETUP                     ===
+// ===                    PACK FUNCTIONS                      ===
 // ================================================================
 
+// Call every time you want to report data to central
+// Generic function for ParameterReports and DataReports
+void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
+  // Pack
+  writer.setBuffer(packed_data, MAX_PACKED_DATA);
 
-#include "XBee.h"
+    writer.openMap();
+  
+      writer.putString("type");
+      char typeString[5];
+      switch( _reportType ) {
+        case REPORT_DATA:
+          strcpy(typeString, "dRep");
+          break;
+        case REPORT_AVAIL_PARAMETERS:
+          strcpy(typeString, "pRep");
+          break;
+      }
+      writer.putString(typeString);
+    
+      writer.putString("msg");
+      writer.openList();
+      
+      // Cycle through the available parameters
+      for ( byte i=0; i < _numParams; i++ )
+      { 
+        writer.openMap();
+    
+          char _parameterName[5];
+          _p[i]->getName( _parameterName );
+          writer.putString("pNam");
+          writer.putString(_parameterName);
+  
+          if ( _reportType == REPORT_AVAIL_PARAMETERS ) {
+            writer.putString("min");
+            writer.putReal( _p[i]->getMin() );
+    
+            writer.putString("max");
+            writer.putReal( _p[i]->getMax() );
+          }
+      
+          writer.putString("val");
+          writer.putReal(_p[i]->getPercent());
+    
+        writer.close();
+      }
+      
+      writer.close(); // Close the list of parameters
+  
+    writer.close(); // Close the dictionary with reportType and messages
 
-// xBee variables
-XBee xbee = XBee();
+  writer.close(); // Close the writer
 
-#define MAX_PACKED_DATA 100
-uint8_t packed_data[MAX_PACKED_DATA];
-int packed_data_length;
-
-// Transmission variables
-Tx16Request tx = Tx16Request(0x0001, packed_data, sizeof(packed_data)); // 16-bit addressing: Enter address of remote XBee, typically the coordinator
-TxStatusResponse txStatus = TxStatusResponse();
-
-// Receiving variables
-XBeeResponse response = XBeeResponse(); 
-Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
-uint8_t option = 0;
+  packed_data_length = writer.getOffset();
+  // Warn that the data packet is probably too big!
+  if ( packed_data_length >= 98 ) {
+    Serial.print("WARNING!  packed_data_length "); Serial.println(packed_data_length);
+  }
+}
 
 
+
+
+// ================================================================
+// ===                    SEND FUNCTIONS                     ===
+// ================================================================
+
+void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParams )
+{
+
+    // Pack data into transmission (packed_data)
+    packTx_Report( _type, _p, _numParams );
+
+    // Send data to main BASE
+    long counter = millis();
+    xbee.send(tx); // Takes about 10 ms...why?
+    Serial.print("xbee send time = "); Serial.println( millis()-counter );
+}
+
+
+
+
+// ================================================================
+// ===                       XBEE SETUP                     ===
+// ================================================================
 
 void xbeeSetup()
 {
     Serial3.begin(115200);
     xbee.setSerial(Serial3);
-    delay(3000);
+    delay(100);
+
+    #ifdef SEND_INITIAL_TRANSMISSION
+      Serial.println("Sending controllable parameters...");
+      BasicParameter *p[3] = {
+              &animations[currentAnimation]->level_Parameter,
+              &animations[currentAnimation]->hue_Parameter,
+              &animations[currentAnimation]->decay_Parameter
+            };
+
+  //     Is this equivalent to below?
+  //    BasicParameter *p[3];
+  //    p[0] = &(animations[currentAnimation]->level_Parameter);
+  //    p[1] = &(animations[currentAnimation]->hue_Parameter);
+  //    p[2] = &(animations[currentAnimation]->decay_Parameter);
+
+      sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[0], 1 ); // Level
+      delay(500);
+
+      sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[1], 1 ); // Hue
+      delay(500);
+
+      sendCommunications_Report( REPORT_AVAIL_PARAMETERS, &p[2], 1 ); // Decay
+      delay(500);
+    #endif
+
+//    delay(3000);
 }
+
+
+
 
 // ================================================================
 // ===                    XBEE FUNCTIONS                     ===
 // ================================================================
+
+void unpackAndParseRx() {
+  // Unpack and read entire message, continuously close() until nothing is left
+  int controlMessage = -1; // Out of range
+  float valFloat = 0.00;
+  int valInt = 0;
+  char valString[5]; 
+  
+  reader.setBuffer(packed_data, packed_data_length);
+
+  reader.getType() == TP_LIST ? reader.openList(), reader.next(), Serial.println("List opening") : Serial.println("Error opening first list");
+  reader.isInteger() ? controlMessage = reader.getInteger(), reader.next(), Serial.print("control message = "), Serial.println(controlMessage) : Serial.println("Error control integer");
+  uint8_t type = reader.getType();
+  Serial.print("type "); Serial.println(type);
+  switch ( type ) {
+    case TP_REAL:
+      valFloat = reader.getReal();
+      break;
+    case TP_INTEGER:
+      valInt = reader.getInteger();
+      break;
+    default:
+      Serial.println("Unsupported value type");
+      break;
+  }
+  while (reader.close());
+
+  // Handle the response here...
+  switch ( controlMessage ) { // 
+    case 0: // Animation change
+      Serial.print("Animation change = "); Serial.println(valInt);
+      currentAnimation = byte( constrain(valInt, 0, NUM_ANIMATIONS-1) );
+      break;
+
+    case 1: // Tune parameter 1
+//      power.hue_Parameter.setPercent(valFloat);
+      animations[currentAnimation]->hue_Parameter.setPercent(valFloat);
+      Serial.print("HueP change = "); Serial.println(valFloat);
+      break;
+
+    case 2: // Tune parameter 2
+      
+//      power.decay_Parameter.setPercent(valFloat);
+      animations[currentAnimation]->decay_Parameter.setPercent(valFloat);
+      Serial.print("Decay change = "); Serial.println(valFloat);
+      break;
+
+    case 3: // Tune parameter 3
+      Serial.print("? change = "); Serial.println(valFloat);
+      break;
+
+    default:
+      Serial.println("Improper control message)");
+      break;
+  }
+  
+}
+
+
+
 
 // Needs to return array of responses to the model
 void getCommunications()
@@ -60,176 +208,33 @@ void getCommunications()
     // Query xBee for incoming messages
     if (xbee.readPacket(1))
     {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
+      if (xbee.getResponse().isAvailable()) {
+          if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
+          {
+              Serial.println("rx16 response");
+              xbee.getResponse().getRx16Response(rx16);
+
+              // Unload into packed_data
+              byte responseLength = rx16.getDataLength();
+              // Serial.print("Response Length = "); Serial.println(responseLength);
+              // Serial.print("Printing received data ");
+              for ( byte i = 0; i < responseLength; i++ ) {
+                packed_data[i] = rx16.getData(i);
+                // Serial.println(packed_data[i]);
+              }
+              
+              packed_data_length = responseLength;
+
+              readAndPrintElements();
+              // Need to unpacked appropriately here!
+              unpackAndParseRx();
+          }
+          else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("Tx response - WHY???");
+      }
+      else { Serial.println('xbee weird response type'); } // Not something we were expecting
     }
-    else
-    {
-        Serial.println(F("No incoming xBee messages"));
-    }
+    else { Serial.println(F("No incoming xBee messages")); }
 }
-
-
-
-void sendCommunications()
-{
-    // Pack data into transmission
-    // These are custom mapped from Power animation
-    // NEED TO UNDO THIS...
-    writeFunction( power.level_Parameter.getPercent(), power.hue_Parameter.getPercent() );
-
-    // Send data to main BASE
-    xbee.send(tx);
-
-    // Query xBee for incoming messages
-    if (xbee.readPacket(1))
-    {
-        if (xbee.getResponse().isAvailable()) {
-            if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
-            {
-                xbee.getResponse().getRx16Response(rx16);
-                Serial.println("rx response");
-            }
-            else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("tx response");
-        }
-        else
-        {
-            // not something we were expecting
-            // Serial.println('xbee weird response type');    
-        }
-    }
-    else
-    {
-        Serial.println(F("No tx ack from xBee"));
-    }
-}
-
-
-// ================================================================
-// ===                 TINYPACKS FUNCTIONS                      ===
-// ================================================================
-
-
-
-
-
-
-
-
-
-
-
-// ================================================================
-// ===                    WRITER FUNCTIONS                      ===
-// ================================================================
-
-// Use this for the 10/28 test...
-// NEED TO ABSTRACT THIS TO INCLUDE THE FULL MAPPING OF SENT DATA FOR FLEXIBILITY
-// IE SHOULD BE ABLE TO ACCEPT VARIABLE NUMBERS OF PARAMETERS, WITH THEIR NAMES
-void writeFunction(float _aaRealPercent, float _rollPercent) {
-  // Pack
-  writer.setBuffer(packed_data, MAX_PACKED_DATA);
-
-  writer.openMap();
-
-    // write_Report_UnitParameter("decay", 0.0, 0.5, 1.0);
-    // write_Report_UnitParameter("hue", 1.5, 2.0, 2.5);
-
-  // write_Control_UnitParameter("decay", 1.0);
-  // write_Control_UnitParameter("hue", 2.5);
-
-    // write_Report_Unit("aaRealPercent", _aaRealPercent);
-    // write_Report_Unit("rollPercent", _rollPercent);
-
-  writer.putString("msgType");
-  writer.putString("UnitReport");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString("aaRealPercent");
-
-    writer.putString("val");
-    writer.putReal(_aaRealPercent);
-
-  writer.close();
-
-  writer.close();
-
-  packed_data_length = writer.getOffset();
-}
-
-
-void write_Report_UnitParameter( const char *_parameterName, float _min, float _max, float _val ) {
-
-  writer.putString("msgType");
-  writer.putString("UnitParamReport");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString(_parameterName);
-
-    writer.putString("min");
-    writer.putReal(_min);
-
-    writer.putString("max");
-    writer.putReal(_max);
-
-    writer.putString("val");
-    writer.putReal(_val);
-
-  writer.close();
-}
-
-// THIS SHOULD NEVER BE ON THE UNITS
-void write_Control_UnitParameter( const char *_parameterName, float _val ) {
-
-  writer.putString("msgType");
-  writer.putString("UnitParamControl");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString(_parameterName);
-
-    writer.putString("val");
-    writer.putReal(_val);
-
-  writer.close();
-}
-
-
-void write_Report_Unit( const char *_parameterName, float _val) {
-  writer.putString("msgType");
-  writer.putString("UnitReport");
-
-  writer.putString("msg");
-  writer.openMap();
-
-    writer.putString("pName");
-    writer.putString(_parameterName);
-
-    writer.putString("val");
-    writer.putReal(_val);
-
-  writer.close();
-}
-
 
 
 
@@ -251,154 +256,47 @@ void readAndPrintElements() {
 }
 
 
-void readFunctionCustom() {
-
-  struct ParamControlMessage message1;
-
-  // Unpack and read entire message, continuously close() until nothing is left
-  reader.setBuffer(packed_data, packed_data_length);
-
-  // NEED TO ADD ONE FROM THE XBEE DATA STRUCTURE
-  // reader.setBuffer(rx16.getData()+1, packed_data_length); // need to remove first element
-
-  // STEPS
-  // GO TO NEXT TO GET AWAY FROM THE AMOUNT
-  // OPEN THE MAP
-  // START ITERATING
-  byte currentMessage = 0;
-
-
-  if ( reader.next() && reader.openMap() ) {
-    Serial.println("Begin parsing message");
-    while ( reader.next() && reader.match("msgType") ) {
-
-      // Read the message type to text
-      reader.getString(text, MAX_TEXT_LENGTH);
-
-      // TECHNICALLY this goes to "msg"
-      reader.next();
-      // TECHNICALY this goes to the map afterwards
-      reader.next();
-
-      // Open the map to read it
-      reader.openMap();
-
-
-      // Different unloaders based on the message type
-      if ( strcmp(text,"UnitParamControl") == 0 ) {
-
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitParamControl");
-
-        while ( reader.next() ) {
-          // printElement();
-          if ( reader.match("pName") ) reader.getString(message1.key, sizeof(message1.key));
-          else if ( reader.match("val") ) message1.val = reader.getReal();
-          else Serial.println("Not a valid UnitParamControl key");
-        }
-        reader.close();
-      }
-
-      else if ( strcmp(text,"UnitAnimControl") == 0 ) {
-
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitAnimControl");
-
-        while ( reader.next() ) printElement();
-        reader.close();
-      }
-
-      /*
-      // These technically won't be necessary on the units...
-      else if ( strcmp(text,"UnitParamReport") == 0 ) {
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitParamReport");
-        while ( reader.next() ) printElement();
-        reader.close();
-      }
-
-      else if ( strcmp(text,"UnitReport") == 0 ) {
-        memset(&text[0], 0, sizeof(text));
-        Serial.println("Unpacking UnitReport");
-        while ( reader.next() ) printElement();
-        reader.close();
-      }
-      */
-
-      else Serial.println("Unsupported message type");
-      Serial.println();
-    }
-  }
-  else Serial.println("Error parsing incoming message");
-
-
-  Serial.print("Message1 "); Serial.print(message1.key); Serial.print(" : "); Serial.println(message1.val );
-}
-
-
-
-
-void read_Control_Unit () {
-
-}
-
-
 void printElement() {
 
   uint8_t type = reader.getType();
 
   switch ( type ) {
     case TP_NONE:
-    {
       Serial.println("Cannot print none");
       break;
-    }
 
     case TP_BOOLEAN:
-    {
       Serial.print("Boolean "); Serial.println(reader.getBoolean());
       break;
-    }
 
     case TP_INTEGER:
-    {
       Serial.print("Integer "); Serial.println(reader.getInteger());
       break;
-    }
 
     case TP_REAL:
-    {
       Serial.print("Real "); Serial.println(reader.getReal());
       break;
-    }
     
     case TP_STRING:
-    {
       reader.getString(text, MAX_TEXT_LENGTH);
       Serial.print("String "); Serial.println( text );
       break;
-    }
     
     case TP_BYTES:
-    {
       // Serial.print("Bytes "); Serial.println(reader.getBytes());
       Serial.println("Cannot print bytes");
       break;
-    }
     
     case TP_LIST:
-    {
-      Serial.println("Cannot print list");
+      Serial.println("Opening list");
       reader.openList();
       break;
-    }
     
     case TP_MAP:
-    {
       Serial.println("Opening map");
       reader.openMap();
       break;
-    }
+
     default:
       Serial.println("ERROR! NO TYPE");
   }

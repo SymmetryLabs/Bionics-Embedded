@@ -106,7 +106,10 @@ void MPUsetup() {
     mpu.setXGyroOffset(220);
     mpu.setYGyroOffset(76);
     mpu.setZGyroOffset(-85);
-    mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
+    mpu.setYAccelOffset(600); // Calibrated 10/30/2014 to 200
+//    mpu.setZAccelOffset(600); // 1688 factory default for my test chip; Calibrated 10/30/2014 to 600
+//    mpu.setZAccelOffset(1800);
+        mpu.setZAccelOffset(1000);
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {

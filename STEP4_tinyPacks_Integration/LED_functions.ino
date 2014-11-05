@@ -1,23 +1,4 @@
 
-unsigned long lastAnimate = 0;
-
-Train train;
-Fire fire;
-Sparkle sparkle;
-Power power;
-RunningRainbow runningrainbow;
-
-enum AnimationState {
-	FIRE,
-	TRAIN,
-	SPARKLE,
-	POWER,
-	RUNNINGRAINBOW
-};
-
-AnimationState currentAnimation = POWER;
-
-
 
 void LEDsetup() {
 
@@ -34,93 +15,81 @@ void LEDsetup() {
 }
 
 
-uint8_t hueNow = 0;
-
-float rollLPF = 0;
-const float rollLPFalpha = 0.960;
-
 void LEDrun() {
+  
+        static float magLPF;
+        const float magLPFalpha = 0.8;
+
+	static float rollLPF;
+	const float rollLPFalpha = 0.960;
+
+	static float pitchLPF;
+	const float pitchLPFalpha = 0.960;
 
 	// Calculate deltaTime since last animate (animations are time dependent)
 	// This allows for non-fixed framerate running - the Teensy does its best
 	unsigned long deltaMs = millis() - lastAnimate;
-	Serial.print("dT Animation ");
-	Serial.println(deltaMs);
+	Serial.print("dT Animation "); Serial.println(deltaMs);
+
+	float magnitude = aaReal.getMagnitude();
+//	float magnitudePercent = 2.50*( magnitude-1000.) / (56599.-1000.); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
+	float magnitudePercent = ( magnitude-1000.00 ) / (30000.00); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
+	if ( magnitudePercent < 0 ) magnitudePercent = 0;
+        else if ( magnitudePercent > 1 ) magnitudePercent = 1;
+	Serial.print("magPercent "); Serial.println(magnitudePercent);
+
+	rollLPF = rollLPF * rollLPFalpha + ypr[2]*(1-rollLPFalpha);
+	Serial.print("roll LPF "); Serial.println(rollLPF);
+	float rollPercentP = rollLPF/(M_PI/4) + 0.5;
+
+	pitchLPF = rollLPF * pitchLPFalpha + ypr[1]*(1-pitchLPFalpha);
+	Serial.print("pitch LPF "); Serial.println(pitchLPF);
+	float pitchPercentP = pitchLPF/(M_PI/4) + 0.5;
 
 
-	hueNow = (hueNow + 1) % 255;
+	animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+//	animations[currentAnimation]->hue_Parameter.setPercent(rollPercentP);
+
+	// Run animation-specific code
 	switch ( currentAnimation ) {
-
-		case FIRE:
-		{
-			fire.draw(deltaMs);
-			break;
-		}
-
-		case TRAIN:
-		{
-			train.hue_Parameter.setValue(hueNow);
-			train.draw(deltaMs);
-			break;
-		}
 
 		case SPARKLE:
 		{
-			float magnitude = aaReal.getMagnitude();
-			rollLPF = rollLPF * rollLPFalpha + ypr[2]*(1-rollLPFalpha);
-			Serial.print("roll LPF "); Serial.println(rollLPF);
-
-			float rollPercent = rollLPF/(M_PI/4) + 0.5;
-			sparkle.hue_Parameter.setPercent( rollPercent );
-			if ( magnitude > 8000) {
-				// Map from 0-56599.9 -> MIN-MAX SparkleNumber
-				float magnitudePercent = 1.2 * magnitude / 56599.;
-				sparkle.sparkleNumber_Parameter.setPercent(magnitudePercent);
-				sparkle.trigger();
+			// Trigger if percent high enough
+			if ( magnitudePercent > 0.2) {
+                              animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+				sparkle.trigger(); // Sooooo ghetto
 			}
-			sparkle.draw(deltaMs);
 			break;
 		}
 
 		case POWER:
 		{
-			float magnitudeP = aaReal.getMagnitude();
-			rollLPF = rollLPF * rollLPFalpha + ypr[1]*(1-rollLPFalpha);
-			Serial.print("roll LPF "); Serial.println(rollLPF);
-
-			float rollPercentP = rollLPF/(M_PI/4) + 0.5;
-			power.hue_Parameter.setPercent( rollPercentP );
-
-			// Map from 0-56599.9 -> MIN-MAX SparkleNumber
-			float magnitudePercent = 2.5*magnitudeP / (56599.);
-			if ( magnitudePercent < 0 ) magnitudePercent = 0;
-			power.level_Parameter.setPercent(magnitudePercent);
-			
-			power.draw(deltaMs);
 			break;
 		}
-
+/*
 		case RUNNINGRAINBOW:
 		{
-			float magnitudeP = aaReal.getMagnitude();
-			rollLPF = rollLPF * rollLPFalpha + ypr[1]*(1-rollLPFalpha);
-			Serial.print("roll LPF "); Serial.println(rollLPF);
-
-			float rollPercentP = rollLPF/(M_PI/4) + 0.5;
-			runningrainbow.trainSpeed_Parameter.setPercent( rollPercentP );
-
-			// Map from 0-56599.9 -> MIN-MAX SparkleNumber
-			// float magnitudePercent = 2.5*(magnitudeP-7000.) / (56599.-7000.);
-			float magnitudePercent = 2.5*(magnitudeP) / (56599.);
-			if ( magnitudePercent < 0 ) magnitudePercent = 0;
-			runningrainbow.level_Parameter.setPercent(max( magnitudePercent, .15 ));
-			
-			runningrainbow.draw(deltaMs);
 			break;
 		}
+
+		case NOISE:
+		{
+			magLPF = magLPF * magLPFalpha + magnitude*(1-magLPFalpha);
+			Serial.print("mag LPF "); Serial.println(magLPF);
+			float magPercentP = (magnitude) / (56599.);
+			animations[currentAnimation]->level_Parameter.setPercent(magPercentP);
+			break;
+		}
+		*/
+		default:
+			Serial.println("ERROR!!! Running an unsupported animation from LEDrun()");
 	}
 
-	FastLED.show();
+
+	animations[currentAnimation]->draw( deltaMs );
+
+	LEDS.show();
 
 	lastAnimate = millis();
 }

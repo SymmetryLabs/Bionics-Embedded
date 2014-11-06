@@ -70,8 +70,15 @@ float euler[3];         // [psi, theta, phi]    Euler angle container
 
 
 // For Calibration
-//long offsets[6] = { 0, 0, 0, 0, 0, 0 };
-long offsets[6] = { -6046, 832, 2391, 0, 0, 0 };
+#ifdef UNIT_TRIP
+  long offsets[6] = { -1243, -1034, 641, 86, 20, -19 }; // Trip's UNIT
+#elif UNIT_ZERO
+  long offsets[6] = { 0, 0, 0, 0, 0, 0 };
+#else
+  long offsets[6] = { -1243, -1034, 641, 86, 20, -19 };
+#endif
+  
+//long offsets[6] = { -6046, 832, 2391, 0, 0, 0 };
 
                     
 enum OFFSET_TYPE {
@@ -150,7 +157,7 @@ void MPUsetup() {
 
 
 const int MAX_ACCEPTABLE_ERROR = 50;
-const byte MAX_ERROR_COUNTS = 20;
+const byte MAX_ERROR_COUNTS = 50;
 const byte MAX_OFFSET_ITERATIONS = 10;
 
 /*
@@ -187,7 +194,8 @@ void calibrateAccelerations() {
     do {
       averageError = calculateAverageError( &aaReal.x );
       Serial.print("Average Error = "); Serial.println(averageError);
-      mpu.setXAccelOffset( offsets[ACCEL_X] -= averageError/(offsetIteration+1) );
+      long deltaOffset = averageError/(offsetIteration+2);
+      mpu.setXAccelOffset( offsets[ACCEL_X] -= deltaOffset );
       Serial.print("Current X Offset = "); Serial.println(offsets[ACCEL_X]); Serial.println();
       offsetIteration++;
     } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
@@ -200,7 +208,8 @@ void calibrateAccelerations() {
     do {
       averageError = calculateAverageError( &aaReal.y );
       Serial.print("Average Error = "); Serial.println(averageError);
-      mpu.setYAccelOffset( offsets[ACCEL_Y] -= averageError/(offsetIteration+1) );
+      long deltaOffset = averageError/(offsetIteration+2);
+      mpu.setYAccelOffset( offsets[ACCEL_Y] -= deltaOffset );
       Serial.print("Current Y Offset = "); Serial.println(offsets[ACCEL_Y]); Serial.println();
       offsetIteration++;
     } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
@@ -213,7 +222,8 @@ void calibrateAccelerations() {
     do {
       averageError = calculateAverageError( &aaReal.z );
       Serial.print("Average Error = "); Serial.println(averageError);
-      mpu.setZAccelOffset( offsets[ACCEL_Z] -= averageError/(offsetIteration+1) );
+      long deltaOffset = averageError/(offsetIteration+2);
+      mpu.setZAccelOffset( offsets[ACCEL_Z] -= deltaOffset );
       Serial.print("Current Z Offset = "); Serial.println(offsets[ACCEL_Z]); Serial.println();
       offsetIteration++;
     } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
@@ -221,6 +231,7 @@ void calibrateAccelerations() {
     Serial.print(" with Final Error = "); Serial.println(averageError); Serial.println();
 
   Serial.println("Calibration COMPLETE");
+  
   Serial.print("xOffset = "); Serial.print(offsets[ACCEL_X]);
   Serial.print("  yOffset = "); Serial.print(offsets[ACCEL_Y]);
   Serial.print("  zOffset = "); Serial.println(offsets[ACCEL_Z]);

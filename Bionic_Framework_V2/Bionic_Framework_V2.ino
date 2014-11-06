@@ -11,6 +11,8 @@ CHSV ledsHSV[NUM_LEDS];
 // Had to move this to main file for proper dependencies...
 #include "Animation.h"
 
+// Select which unit
+#define UNIT_TRIP
 
 // Initial stuff for MPU
 #define DEBUG

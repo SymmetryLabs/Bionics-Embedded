@@ -29,21 +29,21 @@ void LEDrun() {
 	// Calculate deltaTime since last animate (animations are time dependent)
 	// This allows for non-fixed framerate running - the Teensy does its best
 	unsigned long deltaMs = millis() - lastAnimate;
-	Serial.print("dT Animation "); Serial.println(deltaMs);
+	SERIAL_PRINT("dT Animation "); SERIAL_PRINTLN(deltaMs);
 
 	float magnitude = aaReal.getMagnitude();
 //	float magnitudePercent = 2.50*( magnitude-1000.) / (56599.-1000.); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
 	float magnitudePercent = ( magnitude-1000.00 ) / (30000.00); // Map from 0-56599.9 -> MIN-MAX SparkleNumber
 	if ( magnitudePercent < 0 ) magnitudePercent = 0;
         else if ( magnitudePercent > 1 ) magnitudePercent = 1;
-	Serial.print("magPercent "); Serial.println(magnitudePercent);
+	SERIAL_PRINT("magPercent "); SERIAL_PRINTLN(magnitudePercent);
 
 	rollLPF = rollLPF * rollLPFalpha + ypr[2]*(1-rollLPFalpha);
-	Serial.print("roll LPF "); Serial.println(rollLPF);
+	SERIAL_PRINT("roll LPF "); SERIAL_PRINTLN(rollLPF);
 	float rollPercentP = rollLPF/(M_PI/4) + 0.5;
 
 	pitchLPF = rollLPF * pitchLPFalpha + ypr[1]*(1-pitchLPFalpha);
-	Serial.print("pitch LPF "); Serial.println(pitchLPF);
+	SERIAL_PRINT("pitch LPF "); SERIAL_PRINTLN(pitchLPF);
 	float pitchPercentP = pitchLPF/(M_PI/4) + 0.5;
 
 
@@ -76,14 +76,14 @@ void LEDrun() {
 		case NOISE:
 		{
 			magLPF = magLPF * magLPFalpha + magnitude*(1-magLPFalpha);
-			Serial.print("mag LPF "); Serial.println(magLPF);
+			SERIAL_PRINT("mag LPF "); SERIAL_PRINTLN(magLPF);
 			float magPercentP = (magnitude) / (56599.);
 			animations[currentAnimation]->level_Parameter.setPercent(magPercentP);
 			break;
 		}
 		*/
 		default:
-			Serial.println("ERROR!!! Running an unsupported animation from LEDrun()");
+			SERIAL_PRINTLN("ERROR!!! Running an unsupported animation from LEDrun()");
 	}
 
 

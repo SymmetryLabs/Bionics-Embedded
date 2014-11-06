@@ -1,11 +1,11 @@
 void printParameterP( BasicParameter *_p ) {
   char name[5];
   _p->getName(name);
-  // for ( byte i = 0; i < sizeof(name); i++ ) Serial.println(name[i], HEX);
-  Serial.print("Name: "); Serial.println(name);
-  Serial.print("Val: "); Serial.println(_p->getValue());
-  Serial.print("Min: "); Serial.println(_p->getMin());
-  Serial.print("Max: "); Serial.println(_p->getMax());
+  // for ( byte i = 0; i < sizeof(name); i++ ) SERIAL_PRINTLN(name[i], HEX);
+  SERIAL_PRINT("Name: "); SERIAL_PRINTLN(name);
+  SERIAL_PRINT("Val: "); SERIAL_PRINTLN(_p->getValue());
+  SERIAL_PRINT("Min: "); SERIAL_PRINTLN(_p->getMin());
+  SERIAL_PRINT("Max: "); SERIAL_PRINTLN(_p->getMax());
 }
 
 
@@ -71,7 +71,7 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
   packed_data_length = writer.getOffset();
   // Warn that the data packet is probably too big!
   if ( packed_data_length >= 98 ) {
-    Serial.print("WARNING!  packed_data_length "); Serial.println(packed_data_length);
+    SERIAL_PRINT("WARNING!  packed_data_length "); SERIAL_PRINTLN(packed_data_length);
   }
 }
 
@@ -91,7 +91,7 @@ void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParam
     // Send data to main BASE
     long counter = millis();
     xbee.send(tx); // Takes about 10 ms...why?
-    Serial.print("xbee send time = "); Serial.println( millis()-counter );
+    SERIAL_PRINT("xbee send time = "); SERIAL_PRINTLN( millis()-counter );
 }
 
 
@@ -108,7 +108,7 @@ void xbeeSetup()
     delay(100);
 
     #ifdef SEND_INITIAL_TRANSMISSION
-      Serial.println("Sending controllable parameters...");
+      SERIAL_PRINTLN("Sending controllable parameters...");
       BasicParameter *p[3] = {
               &animations[currentAnimation]->level_Parameter,
               &animations[currentAnimation]->hue_Parameter,
@@ -150,10 +150,21 @@ void unpackAndParseRx() {
   
   reader.setBuffer(packed_data, packed_data_length);
 
-  reader.getType() == TP_LIST ? reader.openList(), reader.next(), Serial.println("List opening") : Serial.println("Error opening first list");
-  reader.isInteger() ? controlMessage = reader.getInteger(), reader.next(), Serial.print("control message = "), Serial.println(controlMessage) : Serial.println("Error control integer");
+  if ( reader.getType() == TP_LIST ) {
+    reader.openList();
+    reader.next();
+    SERIAL_PRINTLN("List opening");
+  }
+  else { SERIAL_PRINTLN("Error opening first list"); }
+  if ( reader.isInteger() ) {
+    controlMessage = reader.getInteger();
+    reader.next();
+    SERIAL_PRINT("control message = ");
+    SERIAL_PRINTLN(controlMessage);
+  }
+  else { SERIAL_PRINTLN("Error control integer"); }
   uint8_t type = reader.getType();
-  Serial.print("type "); Serial.println(type);
+  SERIAL_PRINT("type "); SERIAL_PRINTLN(type);
   switch ( type ) {
     case TP_REAL:
       valFloat = reader.getReal();
@@ -162,7 +173,7 @@ void unpackAndParseRx() {
       valInt = reader.getInteger();
       break;
     default:
-      Serial.println("Unsupported value type");
+      SERIAL_PRINTLN("Unsupported value type");
       break;
   }
   while (reader.close());
@@ -170,29 +181,29 @@ void unpackAndParseRx() {
   // Handle the response here...
   switch ( controlMessage ) { // 
     case 0: // Animation change
-      Serial.print("Animation change = "); Serial.println(valInt);
+      SERIAL_PRINT("Animation change = "); SERIAL_PRINTLN(valInt);
       currentAnimation = byte( constrain(valInt, 0, NUM_ANIMATIONS-1) );
       break;
 
     case 1: // Tune parameter 1
 //      power.hue_Parameter.setPercent(valFloat);
       animations[currentAnimation]->hue_Parameter.setPercent(valFloat);
-      Serial.print("HueP change = "); Serial.println(valFloat);
+      SERIAL_PRINT("HueP change = "); SERIAL_PRINTLN(valFloat);
       break;
 
     case 2: // Tune parameter 2
       
 //      power.decay_Parameter.setPercent(valFloat);
       animations[currentAnimation]->decay_Parameter.setPercent(valFloat);
-      Serial.print("Decay change = "); Serial.println(valFloat);
+      SERIAL_PRINT("Decay change = "); SERIAL_PRINTLN(valFloat);
       break;
 
     case 3: // Tune parameter 3
-      Serial.print("? change = "); Serial.println(valFloat);
+      SERIAL_PRINT("? change = "); SERIAL_PRINTLN(valFloat);
       break;
 
     default:
-      Serial.println("Improper control message)");
+      SERIAL_PRINTLN("Improper control message)");
       break;
   }
   
@@ -211,16 +222,16 @@ void getCommunications()
       if (xbee.getResponse().isAvailable()) {
           if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
           {
-              Serial.println("rx16 response");
+              SERIAL_PRINTLN("rx16 response");
               xbee.getResponse().getRx16Response(rx16);
 
               // Unload into packed_data
               byte responseLength = rx16.getDataLength();
-              // Serial.print("Response Length = "); Serial.println(responseLength);
-              // Serial.print("Printing received data ");
+              // SERIAL_PRINT("Response Length = "); SERIAL_PRINTLN(responseLength);
+              // SERIAL_PRINT("Printing received data ");
               for ( byte i = 0; i < responseLength; i++ ) {
                 packed_data[i] = rx16.getData(i);
-                // Serial.println(packed_data[i]);
+                // SERIAL_PRINTLN(packed_data[i]);
               }
               
               packed_data_length = responseLength;
@@ -229,11 +240,11 @@ void getCommunications()
               // Need to unpacked appropriately here!
               unpackAndParseRx();
           }
-          else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) Serial.println("Tx response - WHY???");
+          else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) SERIAL_PRINTLN("Tx response - WHY???");
       }
-      else { Serial.println('xbee weird response type'); } // Not something we were expecting
+      else { SERIAL_PRINTLN('xbee weird response type'); } // Not something we were expecting
     }
-    else { Serial.println(F("No incoming xBee messages")); }
+    else { SERIAL_PRINTLN(F("No incoming xBee messages")); }
 }
 
 
@@ -262,42 +273,42 @@ void printElement() {
 
   switch ( type ) {
     case TP_NONE:
-      Serial.println("Cannot print none");
+      SERIAL_PRINTLN("Cannot print none");
       break;
 
     case TP_BOOLEAN:
-      Serial.print("Boolean "); Serial.println(reader.getBoolean());
+      SERIAL_PRINT("Boolean "); SERIAL_PRINTLN(reader.getBoolean());
       break;
 
     case TP_INTEGER:
-      Serial.print("Integer "); Serial.println(reader.getInteger());
+      SERIAL_PRINT("Integer "); SERIAL_PRINTLN(reader.getInteger());
       break;
 
     case TP_REAL:
-      Serial.print("Real "); Serial.println(reader.getReal());
+      SERIAL_PRINT("Real "); SERIAL_PRINTLN(reader.getReal());
       break;
     
     case TP_STRING:
       reader.getString(text, MAX_TEXT_LENGTH);
-      Serial.print("String "); Serial.println( text );
+      SERIAL_PRINT("String "); SERIAL_PRINTLN( text );
       break;
     
     case TP_BYTES:
-      // Serial.print("Bytes "); Serial.println(reader.getBytes());
-      Serial.println("Cannot print bytes");
+      // SERIAL_PRINT("Bytes "); SERIAL_PRINTLN(reader.getBytes());
+      SERIAL_PRINTLN("Cannot print bytes");
       break;
     
     case TP_LIST:
-      Serial.println("Opening list");
+      SERIAL_PRINTLN("Opening list");
       reader.openList();
       break;
     
     case TP_MAP:
-      Serial.println("Opening map");
+      SERIAL_PRINTLN("Opening map");
       reader.openMap();
       break;
 
     default:
-      Serial.println("ERROR! NO TYPE");
+      SERIAL_PRINTLN("ERROR! NO TYPE");
   }
 }

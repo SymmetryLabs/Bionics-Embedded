@@ -1,6 +1,14 @@
 // HAS TO BE AT TOP (for some reason...should figure out build order)
 #include "BasicParameter.h"
 
+#ifdef SERIAL_PRINTING
+    #define SERIAL_PRINT(x) Serial.print(x)
+    #define SERIAL_PRINTLN(x) Serial.println(x)
+#else
+    #define SERIAL_PRINT(x)
+    #define SERIAL_PRINTLN(x)
+#endif
+
 // Initial stuff for LEDs and Animations
 #include "FastLED.h"
 #define NUM_LEDS 12
@@ -14,8 +22,11 @@ CHSV ledsHSV[NUM_LEDS];
 // Select which unit
 #define UNIT_TRIP
 
+// Uncomment to disable printing to Serial
+//#define SERIAL_PRINTING
+
 // Initial stuff for MPU
-#define DEBUG
+// #define DEBUG
 #include "I2Cdev.h"
 #include "MPU6050_6Axis_MotionApps20.h"
 // Arduino Wire library is required if I2Cdev I2CDEV_ARDUINO_WIRE implementation
@@ -203,42 +214,42 @@ void setup() {
 
     delay(1000);
     
-    Serial.println();
-    Serial.println();
-    Serial.println(F("--------------------"));
-    Serial.println(F("--------------------"));
-    Serial.println(F("BIONIC FRAMEWORK START"));
-    Serial.println(F("--------------------"));
-    Serial.println(F("--------------------"));
-    Serial.println();
+    SERIAL_PRINTLN();
+    SERIAL_PRINTLN();
+    SERIAL_PRINTLN(F("--------------------"));
+    SERIAL_PRINTLN(F("--------------------"));
+    SERIAL_PRINTLN(F("BIONIC FRAMEWORK START"));
+    SERIAL_PRINTLN(F("--------------------"));
+    SERIAL_PRINTLN(F("--------------------"));
+    SERIAL_PRINTLN();
 
-    Serial.println(F("Bionic Framework SETUP")); Serial.println();
+    SERIAL_PRINTLN(F("Bionic Framework SETUP")); SERIAL_PRINTLN();
 
     // Setup LEDs
-    Serial.println("--");
+    SERIAL_PRINTLN("--");
     LEDsetup();
-    Serial.println(F("--LED Setup Complete")); Serial.println();
+    SERIAL_PRINTLN(F("--LED Setup Complete")); SERIAL_PRINTLN();
 
     // Start xBee
-    Serial.println("--");
+    SERIAL_PRINTLN("--");
     xbeeSetup();
-    Serial.println(F("--xBee Setup Complete")); Serial.println();
+    SERIAL_PRINTLN(F("--xBee Setup Complete")); SERIAL_PRINTLN();
 
     // Setup MPU
-    Serial.println("--");
+    SERIAL_PRINTLN("--");
     LEDS.showColor(CRGB::Red);
     MPUsetup();
     LEDS.showColor(CRGB::Black);
-    Serial.println(F("--MPU Setup Complete")); Serial.println();
+    SERIAL_PRINTLN(F("--MPU Setup Complete")); SERIAL_PRINTLN();
 
     #ifdef AUTO_ANIMATION_CHANGER
-        Serial.println("IMPORTANT!!!  Automatic Animation Changer ENABLED");
+        SERIAL_PRINTLN("IMPORTANT!!!  Automatic Animation Changer ENABLED");
     #endif
 
 
-    Serial.println(F("SETUP Complete"));
-    Serial.println(F("--------------------"));
-    Serial.println(F("--------------------")); Serial.println();
+    SERIAL_PRINTLN(F("SETUP Complete"));
+    SERIAL_PRINTLN(F("--------------------"));
+    SERIAL_PRINTLN(F("--------------------")); SERIAL_PRINTLN();
     LEDS.showColor(CRGB::Green);
     delay(250);
     LEDS.showColor(CRGB::Black);
@@ -262,31 +273,31 @@ void setup() {
 
 void loop() {
 
-    Serial.println(F("Run loop"));
+    SERIAL_PRINTLN(F("Run loop"));
 
     switch ( state ) {
 
         case READ_SENSORS:
-            Serial.println("----------");
-            Serial.println("Start STATE MACHINE");
+            SERIAL_PRINTLN("----------");
+            SERIAL_PRINTLN("Start STATE MACHINE");
             MPUread();
             break;
 
         case ANIMATE:
-            Serial.println("-----");
+            SERIAL_PRINTLN("-----");
             LEDrun();
-            Serial.print("Animation state = "); Serial.println(currentAnimation);
+            SERIAL_PRINT("Animation state = "); SERIAL_PRINTLN(currentAnimation);
             break;
 
         case COMMUNICATE:
-            Serial.println("-----");
+            SERIAL_PRINTLN("-----");
             
             // LOAD INTO MESSAGE STRUCTURES?
             // Loop internally to collect as many messages as were sent? Maybe not necessary anymore...
            getCommunications();
             
             #ifdef SEND_TRANSMISSION
-//                Serial.println("Sending transmission!");
+//                SERIAL_PRINTLN("Sending transmission!");
                 BasicParameter *p[2] = {
                             &animations[currentAnimation]->level_Parameter,
                             &animations[currentAnimation]->hue_Parameter
@@ -306,8 +317,8 @@ void loop() {
             // DO DECAY FIRST
             // THEN HUE
 
-            Serial.println("----------");
-            Serial.println();
+            SERIAL_PRINTLN("----------");
+            SERIAL_PRINTLN();
             break;
 
     }
@@ -319,7 +330,7 @@ void loop() {
     #ifdef AUTO_ANIMATION_CHANGER
         unsigned long timeSinceLastAnimationChange = millis() - timeOfLastAnimationChange;
         if ( timeSinceLastAnimationChange > animationSwitchPeriod ) {
-            Serial.println("ANIMATION CHANGE!");
+            SERIAL_PRINTLN("ANIMATION CHANGE!");
             currentAnimation = (currentAnimation + 1) % NUM_ANIMATIONS;
             timeOfLastAnimationChange = millis();
         }

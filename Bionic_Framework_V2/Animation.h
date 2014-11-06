@@ -57,11 +57,11 @@ void Fire::draw ( unsigned long _deltaTime ) {
 	// Push model to LEDs
     for( int j = 0; j < NUM_LEDS; j++) {
         leds[j] = heatColor( heat[j] );
-        Serial.println(heat[j]);
-        Serial.println(leds[j]);
-        Serial.println(leds[j]);
-        Serial.println(leds[j]);
-        Serial.println();
+        SERIAL_PRINTLN(heat[j]);
+        SERIAL_PRINTLN(leds[j]);
+        SERIAL_PRINTLN(leds[j]);
+        SERIAL_PRINTLN(leds[j]);
+        SERIAL_PRINTLN();
     }
 }
 
@@ -240,8 +240,8 @@ void Sparkle::draw ( unsigned long _deltaTime ) {
 
 void Sparkle::trigger () {
   if ( millis() - lastSpark > sparkBarrier )
-	Serial.print("Trigger! Percent = ");
-	Serial.println(level_Parameter.getPercent());
+	SERIAL_PRINT("Trigger! Percent = ");
+	SERIAL_PRINTLN(level_Parameter.getPercent());
 	for ( byte sparkle = 0; sparkle < int(level_Parameter.getValue()); sparkle ++) {
 		byte pixelIndex = random8(0, NUM_LEDS-1);
 
@@ -394,8 +394,8 @@ void Noise::draw ( unsigned long _deltaTime ) {
 
 //	scale = 2000. * level_Parameter.getPercent()+1;
 	// speedy = 50. * level_Parameter.getPercent()+5;
-//        Serial.print("Noise SCALE = "); Serial.println(scale);
-        Serial.print("Noise SPEED = "); Serial.println(speedy);
+//        SERIAL_PRINT("Noise SCALE = "); SERIAL_PRINTLN(scale);
+        SERIAL_PRINT("Noise SPEED = "); SERIAL_PRINTLN(speedy);
 
 
 	fillnoise8();

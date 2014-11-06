@@ -106,15 +106,15 @@ void MPUsetup() {
     #endif
 
     // initialize device
-    Serial.println(F("Initializing I2C devices..."));
+    SERIAL_PRINTLN(F("Initializing I2C devices..."));
     mpu.initialize();
 
     // verify connection
-    Serial.println(F("Testing device connections..."));
-    Serial.println(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
+    SERIAL_PRINTLN(F("Testing device connections..."));
+    SERIAL_PRINTLN(mpu.testConnection() ? F("MPU6050 connection successful") : F("MPU6050 connection failed"));
 
     // load and configure the DMP
-    Serial.println(F("Initializing DMP..."));
+    SERIAL_PRINTLN(F("Initializing DMP..."));
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
@@ -128,13 +128,13 @@ void MPUsetup() {
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {
         // turn on the DMP, now that it's ready
-        Serial.println(F("Enabling DMP..."));
+        SERIAL_PRINTLN(F("Enabling DMP..."));
         mpu.setDMPEnabled(true);
 
         mpuIntStatus = mpu.getIntStatus();
 
         // set our DMP Ready flag so the main loop() function knows it's okay to use it
-        Serial.println(F("DMP ready! Waiting for first interrupt..."));
+        SERIAL_PRINTLN(F("DMP ready! Waiting for first interrupt..."));
         dmpReady = true;
 
         // get expected DMP packet size for later comparison
@@ -144,14 +144,14 @@ void MPUsetup() {
         // 1 = initial memory load failed
         // 2 = DMP configuration updates failed
         // (if it's going to break, usually the code will be 1)
-        Serial.print(F("DMP Initialization failed (code "));
-        Serial.print(devStatus);
-        Serial.println(F(")"));
+        SERIAL_PRINT(F("DMP Initialization failed (code "));
+        SERIAL_PRINT(devStatus);
+        SERIAL_PRINTLN(F(")"));
     }
 
-    Serial.println("Begin MPU Calibration...");
+    SERIAL_PRINTLN("Begin MPU Calibration...");
     calibrateAccelerations();
-    Serial.println("MPU Calibration COMPLETE");
+    SERIAL_PRINTLN("MPU Calibration COMPLETE");
 
 }
 
@@ -193,49 +193,49 @@ void calibrateAccelerations() {
     
     do {
       averageError = calculateAverageError( &aaReal.x );
-      Serial.print("Average Error = "); Serial.println(averageError);
+      SERIAL_PRINT("Average Error = "); SERIAL_PRINTLN(averageError);
       long deltaOffset = averageError/(offsetIteration+2);
       mpu.setXAccelOffset( offsets[ACCEL_X] -= deltaOffset );
-      Serial.print("Current X Offset = "); Serial.println(offsets[ACCEL_X]); Serial.println();
+      SERIAL_PRINT("Current X Offset = "); SERIAL_PRINTLN(offsets[ACCEL_X]); SERIAL_PRINTLN();
       offsetIteration++;
     } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
-    Serial.print("Final X offset = "); Serial.print(offsets[ACCEL_X]);
-    Serial.print(" with Final Error = "); Serial.println(averageError); Serial.println();
+    SERIAL_PRINT("Final X offset = "); SERIAL_PRINT(offsets[ACCEL_X]);
+    SERIAL_PRINT(" with Final Error = "); SERIAL_PRINTLN(averageError); SERIAL_PRINTLN();
 
 
     offsetIteration = 0;
     averageError = 0;
     do {
       averageError = calculateAverageError( &aaReal.y );
-      Serial.print("Average Error = "); Serial.println(averageError);
+      SERIAL_PRINT("Average Error = "); SERIAL_PRINTLN(averageError);
       long deltaOffset = averageError/(offsetIteration+2);
       mpu.setYAccelOffset( offsets[ACCEL_Y] -= deltaOffset );
-      Serial.print("Current Y Offset = "); Serial.println(offsets[ACCEL_Y]); Serial.println();
+      SERIAL_PRINT("Current Y Offset = "); SERIAL_PRINTLN(offsets[ACCEL_Y]); SERIAL_PRINTLN();
       offsetIteration++;
     } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
-    Serial.print("Final Y offset = "); Serial.print(offsets[ACCEL_Y]);
-    Serial.print(" with Final Error = "); Serial.println(averageError); Serial.println();
+    SERIAL_PRINT("Final Y offset = "); SERIAL_PRINT(offsets[ACCEL_Y]);
+    SERIAL_PRINT(" with Final Error = "); SERIAL_PRINTLN(averageError); SERIAL_PRINTLN();
 
 
     offsetIteration = 0;
     averageError = 0;
     do {
       averageError = calculateAverageError( &aaReal.z );
-      Serial.print("Average Error = "); Serial.println(averageError);
+      SERIAL_PRINT("Average Error = "); SERIAL_PRINTLN(averageError);
       long deltaOffset = averageError/(offsetIteration+2);
       mpu.setZAccelOffset( offsets[ACCEL_Z] -= deltaOffset );
-      Serial.print("Current Z Offset = "); Serial.println(offsets[ACCEL_Z]); Serial.println();
+      SERIAL_PRINT("Current Z Offset = "); SERIAL_PRINTLN(offsets[ACCEL_Z]); SERIAL_PRINTLN();
       offsetIteration++;
     } while ( abs(averageError) > MAX_ACCEPTABLE_ERROR  &&  offsetIteration < MAX_OFFSET_ITERATIONS );
-    Serial.print("Final Z offset = "); Serial.print(offsets[ACCEL_Z]);
-    Serial.print(" with Final Error = "); Serial.println(averageError); Serial.println();
+    SERIAL_PRINT("Final Z offset = "); SERIAL_PRINT(offsets[ACCEL_Z]);
+    SERIAL_PRINT(" with Final Error = "); SERIAL_PRINTLN(averageError); SERIAL_PRINTLN();
 
-  Serial.println("Calibration COMPLETE");
+  SERIAL_PRINTLN("Calibration COMPLETE");
   
-  Serial.print("xOffset = "); Serial.print(offsets[ACCEL_X]);
-  Serial.print("  yOffset = "); Serial.print(offsets[ACCEL_Y]);
-  Serial.print("  zOffset = "); Serial.println(offsets[ACCEL_Z]);
-  Serial.println();
+  SERIAL_PRINT("xOffset = "); SERIAL_PRINT(offsets[ACCEL_X]);
+  SERIAL_PRINT("  yOffset = "); SERIAL_PRINT(offsets[ACCEL_Y]);
+  SERIAL_PRINT("  zOffset = "); SERIAL_PRINTLN(offsets[ACCEL_Z]);
+  SERIAL_PRINTLN();
 
 }
 
@@ -267,18 +267,18 @@ int calculateAverageError( int16_t *_measurement ) {
 void MPUread() {
     // reset interrupt flag and get INT_STATUS byte
     mpuIntStatus = mpu.getIntStatus();
-    // Serial.print("IntStatus ");
-    // Serial.println(mpuIntStatus, HEX);
+    // SERIAL_PRINT("IntStatus ");
+    // SERIAL_PRINTLN(mpuIntStatus, HEX);
 
     // get current FIFO count
     fifoCount = mpu.getFIFOCount();
-    // Serial.print(F("FIFO Count "));
-    // Serial.println(fifoCount);
+    // SERIAL_PRINT(F("FIFO Count "));
+    // SERIAL_PRINTLN(fifoCount);
 
     // check for overflow (this should never happen unless our code is too inefficient)
     if ((mpuIntStatus & 0x10) || fifoCount == 1024) {
         // reset so we can continue cleanly
-        Serial.println(F("FIFO Overflow, resetting..."));
+        SERIAL_PRINTLN(F("FIFO Overflow, resetting..."));
         mpu.resetFIFO();
 
     // otherwise, check for DMP data ready interrupt (this should happen frequently)
@@ -287,8 +287,8 @@ void MPUread() {
         // wait for correct available data length, should be a VERY short wait
         while (fifoCount < packetSize) {
             fifoCount = mpu.getFIFOCount();
-            // Serial.print(F("Wait - FIFO Count "));
-            // Serial.println(fifoCount);
+            // SERIAL_PRINT(F("Wait - FIFO Count "));
+            // SERIAL_PRINTLN(fifoCount);
         }
 
         while (fifoCount >= packetSize){
@@ -305,12 +305,12 @@ void MPUread() {
             // display Euler angles in degrees
             mpu.dmpGetQuaternion(&quat, fifoBuffer);
             mpu.dmpGetEuler(euler, &quat);
-            Serial.print("euler\t");
-            Serial.print(euler[0] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(euler[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.println(euler[2] * 180/M_PI);
+            SERIAL_PRINT("euler\t");
+            SERIAL_PRINT(euler[0] * 180/M_PI);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINT(euler[1] * 180/M_PI);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINTLN(euler[2] * 180/M_PI);
         #endif
 
         #ifdef OUTPUT_READABLE_YAWPITCHROLL
@@ -318,12 +318,12 @@ void MPUread() {
             mpu.dmpGetQuaternion(&quat, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &quat);
             mpu.dmpGetYawPitchRoll(ypr, &quat, &gravity);
-            Serial.print("ypr\t");
-            Serial.print(ypr[0] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(ypr[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI);
+            SERIAL_PRINT("ypr\t");
+            SERIAL_PRINT(ypr[0] * 180/M_PI);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINT(ypr[1] * 180/M_PI);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINTLN(ypr[2] * 180/M_PI);
         #endif
 
         #ifdef OUTPUT_READABLE_REALACCEL
@@ -332,12 +332,12 @@ void MPUread() {
             mpu.dmpGetAccel(&aa, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &quat);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            // Serial.print("areal\t");
-            // Serial.print(aaReal.x);
-            // Serial.print("\t");
-            // Serial.print(aaReal.y);
-            // Serial.print("\t");
-            // Serial.println(aaReal.z);
+            // SERIAL_PRINT("areal\t");
+            // SERIAL_PRINT(aaReal.x);
+            // SERIAL_PRINT("\t");
+            // SERIAL_PRINT(aaReal.y);
+            // SERIAL_PRINT("\t");
+            // SERIAL_PRINTLN(aaReal.z);
         #endif
 
         #ifdef OUTPUT_READABLE_WORLDACCEL
@@ -348,12 +348,12 @@ void MPUread() {
             mpu.dmpGetGravity(&gravity, &quat);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
             mpu.dmpGetLinearAccelInWorld(&aaWorld, &aaReal, &quat);
-            Serial.print("aworld\t");
-            Serial.print(aaWorld.x);
-            Serial.print("\t");
-            Serial.print(aaWorld.y);
-            Serial.print("\t");
-            Serial.println(aaWorld.z);
+            SERIAL_PRINT("aworld\t");
+            SERIAL_PRINT(aaWorld.x);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINT(aaWorld.y);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINTLN(aaWorld.z);
         #endif
 
         #ifdef OUTPUT_CUSTOM
@@ -362,19 +362,19 @@ void MPUread() {
             mpu.dmpGetAccel(&aa, fifoBuffer);
             mpu.dmpGetGravity(&gravity, &quat);
             mpu.dmpGetLinearAccel(&aaReal, &aa, &gravity);
-            Serial.print("areal\t");
-            Serial.print(aaReal.x);
-            Serial.print("\t");
-            Serial.print(aaReal.y);
-            Serial.print("\t");
-            Serial.println(aaReal.z);
+            SERIAL_PRINT("areal\t");
+            SERIAL_PRINT(aaReal.x);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINT(aaReal.y);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINTLN(aaReal.z);
             mpu.dmpGetYawPitchRoll(ypr, &quat, &gravity);
-            Serial.print("ypr\t");
-            Serial.print(ypr[0] * 180/M_PI);
-            Serial.print("\t");
-            Serial.print(ypr[1] * 180/M_PI);
-            Serial.print("\t");
-            Serial.println(ypr[2] * 180/M_PI);
+            SERIAL_PRINT("ypr\t");
+            SERIAL_PRINT(ypr[0] * 180/M_PI);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINT(ypr[1] * 180/M_PI);
+            SERIAL_PRINT("\t");
+            SERIAL_PRINTLN(ypr[2] * 180/M_PI);
         #endif
 
     }

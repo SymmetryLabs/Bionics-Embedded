@@ -20,7 +20,7 @@ CHSV ledsHSV[NUM_LEDS];
 #include "Animation.h"
 
 // Select which unit
-#define UNIT_TRIP
+//#define UNIT_TRIP
 
 // Uncomment to disable printing to Serial
 //#define SERIAL_PRINTING
@@ -69,7 +69,7 @@ enum STATES state = READ_SENSORS;
 // ***************    FLAGS   *****************
 
 #define STARTING_ANIMATION SPARKLE
- #define AUTO_ANIMATION_CHANGER
+#define AUTO_ANIMATION_CHANGER
 
 const unsigned long animationSwitchPeriod = 180 * 1000;
 

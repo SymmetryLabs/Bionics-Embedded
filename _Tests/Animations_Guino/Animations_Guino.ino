@@ -46,8 +46,7 @@ const unsigned long animationSwitchPeriod = 180 * 1000;
 
 
 
-#define NUM_ANIMATIONS 7
-
+#define NUM_ANIMATIONS 8
 Train train;
 Fire fire;
 Sparkle sparkle;
@@ -55,9 +54,10 @@ Power power;
 DualPower dualpower;
 RunningRainbow runningrainbow;
 Noise noise;
+Rain rain;
 
 // Initialize and list animation objects
-Animation *animations[NUM_ANIMATIONS] = { &train, &fire, &sparkle, &power, &dualpower, &runningrainbow, &noise };
+Animation *animations[NUM_ANIMATIONS] = { &train, &fire, &sparkle, &power, &dualpower, &runningrainbow, &noise, &rain };
 
 
 
@@ -68,7 +68,8 @@ enum AnimationState {
     POWER,
     DUALPOWER,
     RUNNINGRAINBOW,
-    NOISE
+    NOISE,
+    RAIN
 };
 
 unsigned long timeOfLastAnimationChange = 0;

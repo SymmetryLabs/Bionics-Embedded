@@ -1,6 +1,9 @@
 // HAS TO BE AT TOP (for some reason...should figure out build order)
 #include "BasicParameter.h"
 
+// Uncomment to disable printing to Serial
+#define SERIAL_PRINTING
+
 #ifdef SERIAL_PRINTING
     #define SERIAL_PRINT(x) Serial.print(x)
     #define SERIAL_PRINTLN(x) Serial.println(x)
@@ -22,8 +25,6 @@ CHSV ledsHSV[NUM_LEDS];
 // Select which unit
 //#define UNIT_TRIP
 
-// Uncomment to disable printing to Serial
-//#define SERIAL_PRINTING
 
 // Initial stuff for MPU
 // #define DEBUG

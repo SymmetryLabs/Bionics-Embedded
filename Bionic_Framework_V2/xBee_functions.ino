@@ -86,23 +86,29 @@ void packTx_Report_OSC( byte _reportType, BasicParameter *_p[], byte _numParams 
     // Load the address and data into an OSC message
     char _parameterName[5];
     _p[i]->getName( _parameterName );
+    SERIAL_PRINTLN(_parameterName);
 
     // NEED TO UPDATE FOR NEW SYSTEM
-    if ( strcmp(_parameterName, "lvl") ) {
+    if ( strcmp(_parameterName, "lvl") == 0 ) {
+      SERIAL_PRINTLN("lvl parameter");
       // This is accelerometer data
       // Address = /m/a/[x,y,z,m]
       osc_tx.setAddress("/m/a/m");
-      // osc_tx.add(_p[i]->getPercent());
-      float number = 400.0;
-      osc_tx.add(number).add(number).add(number);
+      osc_tx.add(_p[i]->getPercent());
+      // float number = 400.0;
+      // osc_tx.add(number).add(number).add(number);
     }
-    else if ( strcmp(_parameterName, "hue") ) {
+    else if ( strcmp(_parameterName, "hue") == 0 ) {
+      SERIAL_PRINTLN("hue parameter");
       // Assume this is gyro data
       // Address = /a/hue
       osc_tx.setAddress("/a/hue");
-      // osc_tx.add(_p[i]->getPercent());
-      float number = 400.0;
-      osc_tx.add(number).add(number).add(number);
+      osc_tx.add(_p[i]->getPercent());
+      // float number = 400.0;
+      // osc_tx.add(number).add(number).add(number);
+    }
+    else {
+      SERIAL_PRINTLN("OSC Packed nothing");
     }
 
 

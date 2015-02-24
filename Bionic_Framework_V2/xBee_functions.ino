@@ -75,7 +75,41 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
   }
 }
 
+// Call every time you want to report data to central
+// Generic function for ParameterReports and DataReports
+void packTx_Report_OSC( byte _reportType, BasicParameter *_p[], byte _numParams ) {
 
+  // Cycle through the available parameters
+  for ( byte i=0; i < _numParams; i++ ) {
+
+    // Decide the OSC address based on what parameter is being sent
+    // Load the address and data into an OSC message
+    char _parameterName[5];
+    _p[i]->getName( _parameterName );
+
+    // NEED TO UPDATE FOR NEW SYSTEM
+    if ( strcmp(_parameterName, "lvl") ) {
+      // This is accelerometer data
+      // Address = /m/a/[x,y,z,m]
+      osc_tx.setAddress("/m/a/m");
+      // osc_tx.add(_p[i]->getPercent());
+      float number = 400.0;
+      osc_tx.add(number).add(number).add(number);
+    }
+    else if ( strcmp(_parameterName, "hue") ) {
+      // Assume this is gyro data
+      // Address = /a/hue
+      osc_tx.setAddress("/a/hue");
+      // osc_tx.add(_p[i]->getPercent());
+      float number = 400.0;
+      osc_tx.add(number).add(number).add(number);
+    }
+
+
+    // Pack the OSC message into the packed_data byte array
+    osc_tx.send(oscbuffer);
+  }
+}
 
 
 // ================================================================
@@ -85,12 +119,23 @@ void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
 void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParams )
 {
 
+    osc_tx.empty();
+
     // Pack data into transmission (packed_data)
-    packTx_Report( _type, _p, _numParams );
+    // packTx_Report( _type, _p, _numParams );
+
+    packTx_Report_OSC (_type, _p, _numParams );
 
     // Send data to main BASE
     long counter = millis();
+
+    // Resize TxRequest based on actual data length.  Eliminates sending blank data over xBee.
+    uint8_t actualPayloadLength = osc_tx.bytes();
+    // tx.setPayloadLength(packed_data_length);
+    tx.setPayloadLength(actualPayloadLength);
+
     xbee.send(tx); // Takes about 10 ms...why?
+    oscbuffer.reset();
     SERIAL_PRINT("xbee send time = "); SERIAL_PRINTLN( millis()-counter );
 }
 

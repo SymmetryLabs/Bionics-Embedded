@@ -131,6 +131,40 @@ struct ParamControlMessage {
 
 
 
+#include <OSCBundle.h>
+
+OSCMessage osc_tx;
+
+class OSCBuffer : public Print {
+
+  private:
+    uint8_t *byteArray;
+    size_t arraySize;
+    size_t currentIndex = 0;
+
+  public:
+
+    OSCBuffer(uint8_t *_byteArray,size_t _arraySize) : byteArray(_byteArray), arraySize(_arraySize) {}
+
+    size_t write(uint8_t b) {
+      uint8_t *currentAddress = byteArray + currentIndex;
+      *currentAddress = b;
+      currentIndex++;
+      return 1;
+    }
+
+    size_t write(uint8_t *bytes, size_t length) {
+      while(length--) write(*bytes++);
+      return 1;
+    }
+
+    void reset() {
+      currentIndex = 0;
+    }
+
+};
+
+
 
 // ================================================================
 // ===                    XBEE SETUP                     ===
@@ -159,6 +193,7 @@ XBee xbee = XBee();
 uint8_t packed_data[MAX_PACKED_DATA];
 int packed_data_length;
 
+OSCBuffer oscbuffer(packed_data, MAX_PACKED_DATA);
 
 /*
 Transmission variables
@@ -305,7 +340,7 @@ void loop() {
 
                 unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
                 if ( timeSinceLastTransmission > transmissionPeriod | !LIMIT_TRANSMISSION_RATE ) {
-                    sendCommunications_Report( REPORT_DATA, p, 2);
+                    sendCommunications_Report( REPORT_DATA, p, 1);
 
                     timeOfLastTransmission = millis();
                 }

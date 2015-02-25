@@ -20,7 +20,7 @@ class BasicParameter {
 		void setPercent ( float _newPercent );
 		// void setMin( float _newMin );
 		// void setMax( float _newMax );
-		void setBasicParameter ( float _value, float _min, float _max );
+		void initBasicParameter ( char *_name, float _value, float _min, float _max );
 
 		void print( Stream &_stream );
 
@@ -89,7 +89,8 @@ void BasicParameter::setPercent( float _newPercent ) {
 }
 
 
-void BasicParameter::setBasicParameter( float _newValue, float _newMin, float _newMax ) {
+void BasicParameter::initBasicParameter( char *_name, float _newValue, float _newMin, float _newMax ) {
+  strcpy(name, _name);
   currentValue = _newValue;
   minValue = _newMin;
   maxValue = _newMax;

@@ -215,7 +215,7 @@ void getCommunications()
               
               packed_data_length = responseLength;
 
-              readAndPrintElements();
+              // readAndPrintElements();
               // Need to unpacked appropriately here!
               unpackAndParseRx();
           }

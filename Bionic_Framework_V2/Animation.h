@@ -17,9 +17,9 @@ class Animation {
 		virtual void draw( unsigned long _deltaTime ) = 0;
 		// void draw( unsigned long _deltaTime ) = 0;
 
-		BasicParameter decay_Parameter("deca", 0, 0, 0); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter("lvl", 0, 0, 0);
-		BasicParameter hue_Parameter("hue", 0, 0, 0);
+		BasicParameter decay_Parameter; // What's a value that's physically intuitive?
+		BasicParameter level_Parameter;
+		BasicParameter hue_Parameter;
 };
 
 
@@ -183,9 +183,17 @@ class Sparkle : public Animation {
 	public:
 		Sparkle() {
 			// Model parameters
-			decay_Parameter.setBasicParameter(8, 5, 25); // What's a value that's physically intuitive?
-			level_Parameter.setBasicParameter(3, 1, 7);
-			hue_Parameter.setBasicParameter(150, 80, 200);
+			decay_Parameter.initBasicParameter("dec", 8, 5, 25); // What's a value that's physically intuitive?
+			level_Parameter.initBasicParameter("lvl", 3, 1, 7);
+			hue_Parameter.initBasicParameter("hue", 150, 80, 200);
+
+			lastSpark = 0;
+			lastDimming = 0;
+			sparkPeriod = 200;
+
+			sparkBarrier = 300;
+
+			isRandomSparkingOn = false;
 		}
 
 		void draw( unsigned long _deltaMs );
@@ -195,13 +203,13 @@ class Sparkle : public Animation {
 	private:
 		void newSparkles();
 
-		unsigned long lastSpark = 0;
-		unsigned long lastDimming = 0;
-		unsigned long sparkPeriod = 200;
+		unsigned long lastSpark;
+		unsigned long lastDimming;
+		unsigned long sparkPeriod;
 
-                unsigned long sparkBarrier = 300;
+		unsigned long sparkBarrier;
 
-		bool isRandomSparkingOn = false;
+		bool isRandomSparkingOn;
 
 };
 
@@ -266,17 +274,20 @@ class Power : public Animation {
 	public:
 		Power() {
 			// Model parameters
-			decay_Parameter.setBasicParameter(25, 5, 25); // What's a value that's physically intuitive?
-			level_Parameter.setBasicParameter(0, 0, NUM_LEDS);
-			hue_Parameter.setBasicParameter(150, 120, 255); // Trip is 200
+			decay_Parameter.initBasicParameter("dec", 25, 5, 25); // What's a value that's physically intuitive?
+			level_Parameter.initBasicParameter("lvl", 0, 0, NUM_LEDS);
+			hue_Parameter.initBasicParameter("hue", 150, 120, 255); // Trip is 200
+
+			long lastSpark = 0;
+			long lastDimming = 0;
 		}
 
 		void draw( unsigned long _deltaMs );
 
 	private:
 
-		long lastSpark = 0;
-		long lastDimming = 0;
+		long lastSpark;
+		long lastDimming;
 
 };
 
@@ -309,9 +320,9 @@ class RunningRainbow : public Animation {
 	public:
 		RunningRainbow() {
 			// Model parameters
-			decay_Parameter.setBasicParameter(5, 1, 255); // What's a value that's physically intuitive?
-			level_Parameter.setBasicParameter(0, 0, 255);
-			hue_Parameter.setBasicParameter(120, 0, 150);
+			decay_Parameter.initBasicParameter(5, 1, 255); // What's a value that's physically intuitive?
+			level_Parameter.initBasicParameter(0, 0, 255);
+			hue_Parameter.initBasicParameter(120, 0, 150);
 		}
 
 		BasicParameter trainSpeed_Parameter = BasicParameter("spd", 10, 1, 100);
@@ -357,22 +368,27 @@ class Noise : public Animation {
 	public:
 		Noise() {
 			// Model parameters
-			decay_Parameter.setBasicParameter(5, 1, 255); // What's a value that's physically intuitive?
-			level_Parameter.setBasicParameter(0, 0, 255);
-			hue_Parameter.setBasicParameter(120, 0, 150);
+			decay_Parameter.initBasicParameter("dec", 5, 1, 255); // What's a value that's physically intuitive?
+			level_Parameter.initBasicParameter("lvl", 0, 0, 255);
+			hue_Parameter.initBasicParameter("hue", 120, 0, 150);
 			x = random16();
 			y = random16();
 			z = random16();
+
+			speedy = 10;
+	//		uint16_t scale = 3500;
+			scale = 2000;
+			SHIFT_BRIGHTNESS = 10;
+			SHIFT_SATURATION = 50;
 		}
 
 		void draw( unsigned long _deltaMs );
 
 	private:
-		uint16_t speedy = 10;
-//		uint16_t scale = 3500;
-		uint16_t scale = 2000;
-		uint8_t SHIFT_BRIGHTNESS = 10;
-		uint8_t SHIFT_SATURATION = 50;
+		uint16_t speedy;
+		uint16_t scale;
+		uint8_t SHIFT_BRIGHTNESS;
+		uint8_t SHIFT_SATURATION;
 		uint8_t noise[NUM_LEDS];
 
 		uint16_t x;
@@ -426,9 +442,9 @@ class DualPower : public Animation {
 	public:
 		DualPower() {
 			// Model parameters
-			decay_Parameter.setBasicParameter(35, 5, 35); // What's a value that's physically intuitive?
-			level_Parameter.setBasicParameter(0, 0, NUM_LEDS);
-			hue_Parameter.setBasicParameter(200, 120, 255);
+			decay_Parameter.initBasicParameter(35, 5, 35); // What's a value that's physically intuitive?
+			level_Parameter.initBasicParameter(0, 0, NUM_LEDS);
+			hue_Parameter.initBasicParameter(200, 120, 255);
 		}
 
 		void draw( unsigned long _deltaMs );

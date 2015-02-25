@@ -327,7 +327,7 @@ void loop() {
 
                 unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
                 if ( timeSinceLastTransmission > transmissionPeriod | !LIMIT_TRANSMISSION_RATE ) {
-                    sendCommunications_Report( REPORT_DATA, p, 1);
+                    sendCommunications_Report(p, 1);
 
                     timeOfLastTransmission = millis();
                 }

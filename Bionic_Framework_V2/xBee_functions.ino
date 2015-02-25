@@ -1,83 +1,11 @@
-void printParameterP( BasicParameter *_p ) {
-  char name[5];
-  _p->getName(name);
-  // for ( byte i = 0; i < sizeof(name); i++ ) SERIAL_PRINTLN(name[i], HEX);
-  SERIAL_PRINT("Name: "); SERIAL_PRINTLN(name);
-  SERIAL_PRINT("Val: "); SERIAL_PRINTLN(_p->getValue());
-  SERIAL_PRINT("Min: "); SERIAL_PRINTLN(_p->getMin());
-  SERIAL_PRINT("Max: "); SERIAL_PRINTLN(_p->getMax());
-}
-
-
-
-
 // ================================================================
 // ===                    PACK FUNCTIONS                      ===
 // ================================================================
 
-// Call every time you want to report data to central
-// Generic function for ParameterReports and DataReports
-void packTx_Report( byte _reportType, BasicParameter *_p[], byte _numParams ) {
-  // Pack
-  writer.setBuffer(packed_data, MAX_PACKED_DATA);
-
-    writer.openMap();
-  
-      writer.putString("type");
-      char typeString[5];
-      switch( _reportType ) {
-        case REPORT_DATA:
-          strcpy(typeString, "dRep");
-          break;
-        case REPORT_AVAIL_PARAMETERS:
-          strcpy(typeString, "pRep");
-          break;
-      }
-      writer.putString(typeString);
-    
-      writer.putString("msg");
-      writer.openList();
-      
-      // Cycle through the available parameters
-      for ( byte i=0; i < _numParams; i++ )
-      { 
-        writer.openMap();
-    
-          char _parameterName[5];
-          _p[i]->getName( _parameterName );
-          writer.putString("pNam");
-          writer.putString(_parameterName);
-  
-          if ( _reportType == REPORT_AVAIL_PARAMETERS ) {
-            writer.putString("min");
-            writer.putReal( _p[i]->getMin() );
-    
-            writer.putString("max");
-            writer.putReal( _p[i]->getMax() );
-          }
-      
-          writer.putString("val");
-          writer.putReal(_p[i]->getPercent());
-    
-        writer.close();
-      }
-      
-      writer.close(); // Close the list of parameters
-  
-    writer.close(); // Close the dictionary with reportType and messages
-
-  writer.close(); // Close the writer
-
-  packed_data_length = writer.getOffset();
-  // Warn that the data packet is probably too big!
-  if ( packed_data_length >= 98 ) {
-    SERIAL_PRINT("WARNING!  packed_data_length "); SERIAL_PRINTLN(packed_data_length);
-  }
-}
 
 // Call every time you want to report data to central
 // Generic function for ParameterReports and DataReports
-void packTx_Report_OSC( byte _reportType, BasicParameter *_p[], byte _numParams ) {
+void packTx_Report_OSC( BasicParameter *_p[], byte _numParams ) {
 
   // Cycle through the available parameters
   for ( byte i=0; i < _numParams; i++ ) {
@@ -122,15 +50,13 @@ void packTx_Report_OSC( byte _reportType, BasicParameter *_p[], byte _numParams 
 // ===                    SEND FUNCTIONS                     ===
 // ================================================================
 
-void sendCommunications_Report( byte _type, BasicParameter *_p[], byte _numParams )
+void sendCommunications_Report( BasicParameter *_p[], byte _numParams )
 {
 
     osc_tx.empty();
 
     // Pack data into transmission (packed_data)
-    // packTx_Report( _type, _p, _numParams );
-
-    packTx_Report_OSC (_type, _p, _numParams );
+    packTx_Report_OSC ( _p, _numParams );
 
     // Send data to main BASE
     long counter = millis();
@@ -199,6 +125,7 @@ void unpackAndParseRx() {
   int valInt = 0;
   char valString[5]; 
   
+  /*
   reader.setBuffer(packed_data, packed_data_length);
 
   if ( reader.getType() == TP_LIST ) {
@@ -257,6 +184,7 @@ void unpackAndParseRx() {
       SERIAL_PRINTLN("Improper control message)");
       break;
   }
+  */
   
 }
 
@@ -304,62 +232,3 @@ void getCommunications()
 // ================================================================
 // ===                    READER FUNCTIONS                      ===
 // ================================================================
-
-
-void readAndPrintElements() {
-  // Unpack and read entire message, continuously close() until nothing is left
-  reader.setBuffer(packed_data, packed_data_length);
-  do {
-    while(reader.next()) {
-      printElement();
-    }
-  }
-  while (reader.close());
-}
-
-
-void printElement() {
-
-  uint8_t type = reader.getType();
-
-  switch ( type ) {
-    case TP_NONE:
-      SERIAL_PRINTLN("Cannot print none");
-      break;
-
-    case TP_BOOLEAN:
-      SERIAL_PRINT("Boolean "); SERIAL_PRINTLN(reader.getBoolean());
-      break;
-
-    case TP_INTEGER:
-      SERIAL_PRINT("Integer "); SERIAL_PRINTLN(reader.getInteger());
-      break;
-
-    case TP_REAL:
-      SERIAL_PRINT("Real "); SERIAL_PRINTLN(reader.getReal());
-      break;
-    
-    case TP_STRING:
-      reader.getString(text, MAX_TEXT_LENGTH);
-      SERIAL_PRINT("String "); SERIAL_PRINTLN( text );
-      break;
-    
-    case TP_BYTES:
-      // SERIAL_PRINT("Bytes "); SERIAL_PRINTLN(reader.getBytes());
-      SERIAL_PRINTLN("Cannot print bytes");
-      break;
-    
-    case TP_LIST:
-      SERIAL_PRINTLN("Opening list");
-      reader.openList();
-      break;
-    
-    case TP_MAP:
-      SERIAL_PRINTLN("Opening map");
-      reader.openMap();
-      break;
-
-    default:
-      SERIAL_PRINTLN("ERROR! NO TYPE");
-  }
-}

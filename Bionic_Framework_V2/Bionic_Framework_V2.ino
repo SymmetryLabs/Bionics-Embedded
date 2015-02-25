@@ -114,22 +114,8 @@ byte currentAnimation = STARTING_ANIMATION;
 
 
 // ================================================================
-// ===                    TINYPACKS SETUP                     ===
+// ===                        OSC SETUP                         ===
 // ================================================================
-
-#include <TinyPacks.h>
-
-PackWriter writer;
-PackReader reader;
-
-#define MAX_TEXT_LENGTH 32
-char text[MAX_TEXT_LENGTH] = "";
-
-struct ParamControlMessage {
-  char key[16];
-  float val;
-};
-
 
 
 #include <OSCBundle.h>
@@ -333,7 +319,7 @@ void loop() {
            getCommunications();
             
             #ifdef SEND_TRANSMISSION
-//                SERIAL_PRINTLN("Sending transmission!");
+                SERIAL_PRINTLN("Sending transmission!");
                 BasicParameter *p[2] = {
                             &animations[currentAnimation]->level_Parameter,
                             &animations[currentAnimation]->hue_Parameter

@@ -1,5 +1,5 @@
 // Had to move this to main file for proper dependencies...
-// #include "BasicParameter.h"
+//#include "BasicParameter.h"
 
 // ================================================================
 // ===                     ABSTRACT CLASS                       ===
@@ -10,7 +10,6 @@ class Animation {
 	public:
 		// Construction
 		Animation() {}
-//		Animation() {}
 
 		// Draw routine, to be called every run
 		// Setting =0 makes it a pure virtual function
@@ -18,9 +17,9 @@ class Animation {
 		virtual void draw( unsigned long _deltaTime ) = 0;
 		// void draw( unsigned long _deltaTime ) = 0;
 
-		BasicParameter decay_Parameter = BasicParameter("deca", 0, 0, 0); // What's a value that's physically intuitive?
-		BasicParameter level_Parameter = BasicParameter("lvl", 0, 0, 0);
-		BasicParameter hue_Parameter = BasicParameter("hue", 0, 0, 0);
+		BasicParameter decay_Parameter("deca", 0, 0, 0); // What's a value that's physically intuitive?
+		BasicParameter level_Parameter("lvl", 0, 0, 0);
+		BasicParameter hue_Parameter("hue", 0, 0, 0);
 };
 
 
@@ -29,6 +28,7 @@ class Animation {
 // ===                     FIRE ANIMATION                       ===
 // ================================================================
 
+/*
 class Fire : public Animation {
 
 	public:
@@ -120,13 +120,13 @@ CRGB Fire::heatColor ( uint8_t _temperature ) {
   return heatcolor;
 }
 
-
+*/
 
 
 // ================================================================
 // ===                     TRAIN ANIMATION                      ===
 // ================================================================
-
+/*
 class Train : public Animation {
 
 	public:
@@ -172,7 +172,7 @@ void Train::shiftPixels () {
 void Train::newTrain () {
 	for ( int node = 0; node < int(trainLength_Parameter.getValue()); node++ ) leds[node].setHSV( hue_Parameter.getValue(), 255, 255 );
 }
-
+*/
 
 // ================================================================
 // ===                     SPARKLE ANIMATION                    ===
@@ -303,6 +303,7 @@ void Power::draw ( unsigned long _deltaTime ) {
 // ===              RUNNING RAINBOW ANIMATION                   ===
 // ================================================================
 
+/*
 class RunningRainbow : public Animation {
 
 	public:
@@ -344,7 +345,7 @@ void RunningRainbow::draw ( unsigned long _deltaTime ) {
 		leds[i] = ledsHSV[NUM_LEDS-1-i];
 	}
 }
-
+*/
 
 
 // ================================================================
@@ -419,6 +420,7 @@ void Noise::draw ( unsigned long _deltaTime ) {
 // ===                   DUAL POWER BAR ANIMATION                    ===
 // ================================================================
 
+/*
 class DualPower : public Animation {
 
 	public:
@@ -456,3 +458,4 @@ void DualPower::draw ( unsigned long _deltaTime ) {
 		leds[i] = ledsHSV[NUM_LEDS-1-i];
 	}
 }
+*/

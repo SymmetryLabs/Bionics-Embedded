@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <Stream.h>
 
 // ================================================================
 // ===                    BASIC PARAMETER                       ===
@@ -20,6 +21,8 @@ class BasicParameter {
 		// void setMin( float _newMin );
 		// void setMax( float _newMax );
 		void setBasicParameter ( float _value, float _min, float _max );
+
+		void print( Stream &_stream );
 
 	private:
 		char name[5];
@@ -90,4 +93,12 @@ void BasicParameter::setBasicParameter( float _newValue, float _newMin, float _n
   currentValue = _newValue;
   minValue = _newMin;
   maxValue = _newMax;
+}
+
+
+void BasicParameter::print( Stream &_stream ) {
+	  _stream.print("Name: "); _stream.println(name);
+	  _stream.print("Val: "); _stream.println(getValue());
+	  _stream.print("Min: "); _stream.println(getMin());
+	  _stream.print("Max: "); _stream.println(getMax());
 }

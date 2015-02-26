@@ -12,6 +12,16 @@
     #define SERIAL_PRINTLN(x)
 #endif
 
+
+// Initialize state changing variable
+enum COMM_MSG_TYPE {
+    ACC_R,
+    ACC_P,
+    GYR_R,
+    GYR_P
+};
+
+
 // Initial stuff for LEDs and Animations
 #include "FastLED.h"
 #define NUM_LEDS 12
@@ -40,9 +50,6 @@ VectorInt16 aaReal;     // [x, y, z]            gravity-free accel sensor measur
 float ypr[3];           // [yaw, pitch, roll]   yaw/pitch/roll container and gravity vector
 
 
-
-
-
 // Initialize state changing variable
 enum STATES {
     READ_SENSORS,
@@ -63,6 +70,42 @@ enum STATES state = READ_SENSORS;
 
 
 // ================================================================
+// ===                     MODEL VARIABLES                      ===
+// ================================================================
+
+float magLPF;
+const float magLPFalpha = 0.8;
+
+float rollLPF;
+const float rollLPFalpha = 0.960;
+
+float pitchLPF;
+const float pitchLPFalpha = 0.960;
+
+float magnitude;
+float magnitudePercent;
+
+float rollPercentP;
+float pitchPercentP;
+
+
+short int *model_acc_raw[3] = { &aaReal.x,
+                        &aaReal.y,
+                        &aaReal.z };
+
+float *model_acc_processed[1] = { &magnitudePercent };
+
+float *model_gyr_raw[3] = { &ypr[0],
+                           &ypr[1],
+                           &ypr[2] };
+
+float *model_gyr_processed[2] = { &pitchPercentP,
+                            &rollPercentP};
+
+
+
+
+// ================================================================
 // ===                    Animation SETUP                     ===
 // ================================================================
 
@@ -76,8 +119,6 @@ const unsigned long animationSwitchPeriod = 180 * 1000;
 
 // ********************************************
 // ********************************************
-
-
 
 #define NUM_ANIMATIONS 2
 
@@ -320,14 +361,28 @@ void loop() {
             
             #ifdef SEND_TRANSMISSION
                 SERIAL_PRINTLN("Sending transmission!");
-                BasicParameter *p[2] = {
-                            &animations[currentAnimation]->level_Parameter,
-                            &animations[currentAnimation]->hue_Parameter
-                        };
 
                 unsigned long timeSinceLastTransmission = millis() - timeOfLastTransmission;
                 if ( timeSinceLastTransmission > transmissionPeriod | !LIMIT_TRANSMISSION_RATE ) {
-                    sendCommunications_Report(p, 1);
+
+                    // List the desired things to send here
+                    // *model_acc -> /m/acc/r
+                    // *model_acc_processed -> /m/acc/p
+                    // *model_gyro -> /m/gyr/r
+                    // *model_gyro_processing -> /m/gyr/p
+                    // Assume everything is a float
+                    // packOSC( dataDictionary, lengthDictionary )
+
+                    sendCommunications_Report( ACC_R );
+
+
+                    // SELECT HERE WHICH COMMUNICATIONS TO SEND
+                    // WANT TO BE ABLE TO SWTICH BETWEEN: magnitude, all acc, all gyro, everything together
+                    // Should I send a bundle if we do multiple?
+                    // Basically need a main function that handle loading the bundle / message
+                    // Give it consistent information on what to load
+                    // Address and data pairs
+                    // Mapping function from what's desired to the appropriate addresses
 
                     timeOfLastTransmission = millis();
                 }

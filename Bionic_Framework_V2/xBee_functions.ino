@@ -5,44 +5,41 @@
 
 // Call every time you want to report data to central
 // Generic function for ParameterReports and DataReports
-void packTx_Report_OSC( BasicParameter *_p[], byte _numParams ) {
+void packTx_Report_OSC( byte _commMessage ) {
 
   // Cycle through the available parameters
-  for ( byte i=0; i < _numParams; i++ ) {
+  // for ( byte i=0; i < _numParams; i++ ) {
 
-    // Decide the OSC address based on what parameter is being sent
-    // Load the address and data into an OSC message
-    char _parameterName[5];
-    _p[i]->getName( _parameterName );
-    SERIAL_PRINTLN(_parameterName);
-
-    // NEED TO UPDATE FOR NEW SYSTEM
-    if ( strcmp(_parameterName, "lvl") == 0 ) {
-      SERIAL_PRINTLN("lvl parameter");
-      // This is accelerometer data
-      // Address = /m/a/[x,y,z,m]
-      osc_tx.setAddress("/m/a/m");
-      osc_tx.add(_p[i]->getPercent());
-      // float number = 400.0;
-      // osc_tx.add(number).add(number).add(number);
-    }
-    else if ( strcmp(_parameterName, "hue") == 0 ) {
-      SERIAL_PRINTLN("hue parameter");
-      // Assume this is gyro data
-      // Address = /a/hue
-      osc_tx.setAddress("/a/hue");
-      osc_tx.add(_p[i]->getPercent());
-      // float number = 400.0;
-      // osc_tx.add(number).add(number).add(number);
-    }
-    else {
-      SERIAL_PRINTLN("OSC Packed nothing");
+    switch ( _commMessage ) {
+      case ACC_R: {
+        SERIAL_PRINTLN("Send ACC_R");
+        osc_tx.setAddress("/m/a/r");
+        osc_tx.add( *model_acc_raw[0] ).add( *model_acc_raw[1] ).add( *model_acc_raw[2] );
+      }
+      case ACC_P: {
+        SERIAL_PRINTLN("Send ACC_P");
+        osc_tx.setAddress("/m/a/p");
+        osc_tx.add( *model_acc_processed[0] );
+      }
+      case GYR_R: {
+        SERIAL_PRINTLN("Send GYR_R");
+        osc_tx.setAddress("/m/g/r");
+        osc_tx.add( *model_gyr_raw[0] ).add( *model_gyr_raw[1] ).add( *model_gyr_raw[2] );
+      }
+      case GYR_P: {
+        SERIAL_PRINTLN("Send GYR_P");
+        osc_tx.setAddress("/m/g/p");
+        osc_tx.add( *model_gyr_processed[0] ).add( *model_gyr_processed[1] );
+      }
+      default: {
+        SERIAL_PRINTLN("OSC packed nothing");
+      }
     }
 
 
     // Pack the OSC message into the packed_data byte array
     osc_tx.send(oscbuffer);
-  }
+  // }
 }
 
 
@@ -50,13 +47,13 @@ void packTx_Report_OSC( BasicParameter *_p[], byte _numParams ) {
 // ===                    SEND FUNCTIONS                     ===
 // ================================================================
 
-void sendCommunications_Report( BasicParameter *_p[], byte _numParams )
+void sendCommunications_Report( byte _commMessage )
 {
 
     osc_tx.empty();
 
     // Pack data into transmission (packed_data)
-    packTx_Report_OSC ( _p, _numParams );
+    packTx_Report_OSC ( _commMessage );
 
     // Send data to main BASE
     long counter = millis();

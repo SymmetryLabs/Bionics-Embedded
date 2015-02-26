@@ -15,24 +15,29 @@ void packTx_Report_OSC( byte _commMessage ) {
         SERIAL_PRINTLN("Send ACC_R");
         osc_tx.setAddress("/m/a/r");
         osc_tx.add( *model_acc_raw[0] ).add( *model_acc_raw[1] ).add( *model_acc_raw[2] );
+        break;
       }
       case ACC_P: {
         SERIAL_PRINTLN("Send ACC_P");
         osc_tx.setAddress("/m/a/p");
         osc_tx.add( *model_acc_processed[0] );
+        break;
       }
       case GYR_R: {
         SERIAL_PRINTLN("Send GYR_R");
         osc_tx.setAddress("/m/g/r");
         osc_tx.add( *model_gyr_raw[0] ).add( *model_gyr_raw[1] ).add( *model_gyr_raw[2] );
+        break;
       }
       case GYR_P: {
         SERIAL_PRINTLN("Send GYR_P");
         osc_tx.setAddress("/m/g/p");
         osc_tx.add( *model_gyr_processed[0] ).add( *model_gyr_processed[1] );
+        break;
       }
       default: {
         SERIAL_PRINTLN("OSC packed nothing");
+        break;
       }
     }
 

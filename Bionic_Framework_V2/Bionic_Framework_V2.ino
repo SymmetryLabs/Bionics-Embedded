@@ -2,7 +2,11 @@
 #include "BasicParameter.h"
 
 // Uncomment to disable printing to Serial
-#define SERIAL_PRINTING
+// #define SERIAL_PRINTING
+#define SERIAL_PRINTING2
+
+// Uncomment to disable initial calibration of the MPU offsets
+//#define ENABLE_CALIBRATION
 
 #ifdef SERIAL_PRINTING
     #define SERIAL_PRINT(x) Serial.print(x)
@@ -12,9 +16,17 @@
     #define SERIAL_PRINTLN(x)
 #endif
 
+#ifdef SERIAL_PRINTING2
+    #define SERIAL_PRINT2(x) Serial.print(x)
+    #define SERIAL_PRINTLN2(x) Serial.println(x)
+#else
+    #define SERIAL_PRINT2(x)
+    #define SERIAL_PRINTLN2(x)
+#endif
+
 
 // Initialize state changing variable
-enum COMM_MSG_TYPE {
+enum CommMsgType {
     ACC_R,
     ACC_P,
     GYR_R,
@@ -162,6 +174,7 @@ byte currentAnimation = STARTING_ANIMATION;
 #include <OSCBundle.h>
 
 OSCMessage osc_tx;
+OSCMessage osc_rx;
 
 class OSCBuffer : public Print {
 
@@ -219,7 +232,7 @@ XBee xbee = XBee();
 
 #define MAX_PACKED_DATA 100
 uint8_t packed_data[MAX_PACKED_DATA];
-int packed_data_length;
+uint8_t packed_data_length;
 
 OSCBuffer oscbuffer(packed_data, MAX_PACKED_DATA);
 
@@ -247,15 +260,6 @@ const uint16_t ADDRESS_COORDINATOR = 0x0001;
 Tx16Request tx = Tx16Request( ADDRESS_COORDINATOR, DISABLE_ACK_OPTION, packed_data, sizeof(packed_data), NO_RESPONSE_FRAME_ID );
 TxStatusResponse txStatus = TxStatusResponse();
 unsigned long timeOfLastTransmission = 0;;
-
-//enum ReportType {
-//  REPORT_DATA,
-//  REPORT_AVAIL_PARAMETERS
-//};
-//
-//enum ReportType reportType = REPORT_AVAIL_PARAMETERS;
-#define REPORT_DATA 0
-#define REPORT_AVAIL_PARAMETERS 1
 
 
 // Receiving variables
@@ -372,7 +376,7 @@ void loop() {
                     // *model_gyro_processing -> /m/gyr/p
                     // Assume everything is a float
                     // packOSC( dataDictionary, lengthDictionary )
-
+                    
                     sendCommunications_Report( ACC_R );
 
 
@@ -387,12 +391,7 @@ void loop() {
                     timeOfLastTransmission = millis();
                 }
             #endif
-
-
-            // ACT ON THE MESSAGES HERE?
-            // IF SO, SET THE ANIMATION PARAMETERS
-            // DO DECAY FIRST
-            // THEN HUE
+            
 
             SERIAL_PRINTLN("----------");
             SERIAL_PRINTLN();

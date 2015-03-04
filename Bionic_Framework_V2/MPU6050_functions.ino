@@ -149,9 +149,11 @@ void MPUsetup() {
         SERIAL_PRINTLN(F(")"));
     }
 
-    SERIAL_PRINTLN("Begin MPU Calibration...");
-    calibrateAccelerations();
-    SERIAL_PRINTLN("MPU Calibration COMPLETE");
+    #ifdef ENABLE_CALIBRATION
+      SERIAL_PRINTLN("Begin MPU Calibration...");
+      calibrateAccelerations();
+      SERIAL_PRINTLN("MPU Calibration COMPLETE");
+    #endif
 
 }
 

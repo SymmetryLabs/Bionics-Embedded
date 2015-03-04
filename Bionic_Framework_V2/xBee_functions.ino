@@ -55,8 +55,6 @@ void packTx_Report_OSC( byte _commMessage ) {
 void sendCommunications_Report( byte _commMessage )
 {
 
-    osc_tx.empty();
-
     // Pack data into transmission (packed_data)
     packTx_Report_OSC ( _commMessage );
 
@@ -70,6 +68,7 @@ void sendCommunications_Report( byte _commMessage )
 
     xbee.send(tx); // Takes about 10 ms...why?
     oscbuffer.reset();
+    osc_tx.empty();
     SERIAL_PRINT("xbee send time = "); SERIAL_PRINTLN( millis()-counter );
 }
 
@@ -120,78 +119,6 @@ void xbeeSetup()
 // ===                    XBEE FUNCTIONS                     ===
 // ================================================================
 
-void unpackAndParseRx() {
-  // Unpack and read entire message, continuously close() until nothing is left
-  int controlMessage = -1; // Out of range
-  float valFloat = 0.00;
-  int valInt = 0;
-  char valString[5]; 
-  
-  /*
-  reader.setBuffer(packed_data, packed_data_length);
-
-  if ( reader.getType() == TP_LIST ) {
-    reader.openList();
-    reader.next();
-    SERIAL_PRINTLN("List opening");
-  }
-  else { SERIAL_PRINTLN("Error opening first list"); }
-  if ( reader.isInteger() ) {
-    controlMessage = reader.getInteger();
-    reader.next();
-    SERIAL_PRINT("control message = ");
-    SERIAL_PRINTLN(controlMessage);
-  }
-  else { SERIAL_PRINTLN("Error control integer"); }
-  uint8_t type = reader.getType();
-  SERIAL_PRINT("type "); SERIAL_PRINTLN(type);
-  switch ( type ) {
-    case TP_REAL:
-      valFloat = reader.getReal();
-      break;
-    case TP_INTEGER:
-      valInt = reader.getInteger();
-      break;
-    default:
-      SERIAL_PRINTLN("Unsupported value type");
-      break;
-  }
-  while (reader.close());
-
-  // Handle the response here...
-  switch ( controlMessage ) { // 
-    case 0: // Animation change
-      SERIAL_PRINT("Animation change = "); SERIAL_PRINTLN(valInt);
-      currentAnimation = byte( constrain(valInt, 0, NUM_ANIMATIONS-1) );
-      break;
-
-    case 1: // Tune parameter 1
-//      power.hue_Parameter.setPercent(valFloat);
-      animations[currentAnimation]->hue_Parameter.setPercent(valFloat);
-      SERIAL_PRINT("HueP change = "); SERIAL_PRINTLN(valFloat);
-      break;
-
-    case 2: // Tune parameter 2
-      
-//      power.decay_Parameter.setPercent(valFloat);
-      animations[currentAnimation]->decay_Parameter.setPercent(valFloat);
-      SERIAL_PRINT("Decay change = "); SERIAL_PRINTLN(valFloat);
-      break;
-
-    case 3: // Tune parameter 3
-      SERIAL_PRINT("? change = "); SERIAL_PRINTLN(valFloat);
-      break;
-
-    default:
-      SERIAL_PRINTLN("Improper control message)");
-      break;
-  }
-  */
-  
-}
-
-
-
 
 // Needs to return array of responses to the model
 void getCommunications()
@@ -203,34 +130,44 @@ void getCommunications()
       if (xbee.getResponse().isAvailable()) {
           if (xbee.getResponse().getApiId() == RX_16_RESPONSE)
           {
-              SERIAL_PRINTLN("rx16 response");
+              SERIAL_PRINTLN2("RX16 response");
               xbee.getResponse().getRx16Response(rx16);
 
               // Unload into packed_data
               byte responseLength = rx16.getDataLength();
-              // SERIAL_PRINT("Response Length = "); SERIAL_PRINTLN(responseLength);
+              SERIAL_PRINT2("Response Length = "); SERIAL_PRINTLN2(responseLength);
               // SERIAL_PRINT("Printing received data ");
               for ( byte i = 0; i < responseLength; i++ ) {
                 packed_data[i] = rx16.getData(i);
-                // SERIAL_PRINTLN(packed_data[i]);
+                SERIAL_PRINT2(packed_data[i]);
+                SERIAL_PRINT2(" ");
               }
+              SERIAL_PRINTLN2();
               
               packed_data_length = responseLength;
 
               // readAndPrintElements();
-              // Need to unpacked appropriately here!
-              unpackAndParseRx();
+
+              // Unpack bytes in OSC message
+              char addr[32];
+              osc_rx.fill( packed_data, packed_data_length );
+              SERIAL_PRINT2("OSC RX Address = ");
+              unsigned int addr_length = osc_rx.getAddress(addr, 0, packed_data_length);
+              for ( int i = 0; i < addr_length; i++ ) {
+                SERIAL_PRINT2(addr[i]);
+              }
+              SERIAL_PRINTLN2();
+              // for ( int i = addr_length; i < packed_data_length; i++ ){
+
+              // }
+              SERIAL_PRINTLN2();
           }
-          else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) SERIAL_PRINTLN("Tx response - WHY???");
+          else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) SERIAL_PRINTLN2("Tx response - WHY???");
       }
-      else { SERIAL_PRINTLN('xbee weird response type'); } // Not something we were expecting
+      else { SERIAL_PRINTLN2('xbee weird response type'); } // Not something we were expecting
     }
     else { SERIAL_PRINTLN(F("No incoming xBee messages")); }
+
+    osc_rx.empty();
+//    SERIAL_PRINTLN2();
 }
-
-
-
-
-// ================================================================
-// ===                    READER FUNCTIONS                      ===
-// ================================================================

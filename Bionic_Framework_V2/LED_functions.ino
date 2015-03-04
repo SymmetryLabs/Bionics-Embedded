@@ -53,7 +53,6 @@ void LEDrun() {
   
     modelRun(deltaMs);
 
-    animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
 //  animations[currentAnimation]->hue_Parameter.setPercent(rollPercentP);
 
     // Run animation-specific code
@@ -61,6 +60,8 @@ void LEDrun() {
 
         case SPARKLE:
         {
+            animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+
             // Trigger if percent high enough
             if ( magnitudePercent > 0.2) {
                 animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
@@ -71,8 +72,22 @@ void LEDrun() {
 
         case POWER:
         {
+            animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
             break;
         }
+
+        case DUALPOWER:
+        {
+            SERIAL_PRINT2("EQ[0] = "); SERIAL_PRINTLN2(eq[0]);
+            SERIAL_PRINT2("EQ[1] = "); SERIAL_PRINTLN2(eq[1]);
+            dualpower.level1_Parameter.setPercent(eq[0]);
+            dualpower.level2_Parameter.setPercent(eq[1]);
+            // Test code for pattern - seems to work fine
+            // dualpower.level1_Parameter.setPercent( float(random(0,10)) / 10. );
+            // dualpower.level2_Parameter.setPercent( float(random(0,10)) / 10. );
+            break;
+        }
+
         default:
         {
             SERIAL_PRINTLN("ERROR!!! Running an unsupported animation from LEDrun()");

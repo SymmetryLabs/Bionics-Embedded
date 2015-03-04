@@ -436,16 +436,22 @@ void Noise::draw ( unsigned long _deltaTime ) {
 // ===                   DUAL POWER BAR ANIMATION                    ===
 // ================================================================
 
-/*
+
 class DualPower : public Animation {
 
 	public:
 		DualPower() {
 			// Model parameters
-			decay_Parameter.initBasicParameter(35, 5, 35); // What's a value that's physically intuitive?
-			level_Parameter.initBasicParameter(0, 0, NUM_LEDS);
-			hue_Parameter.initBasicParameter(200, 120, 255);
+			decay_Parameter.initBasicParameter("dec", 35, 5, 35); // What's a value that's physically intuitive?
+			// This probably does not make level1 and level the same construct...
+			level1_Parameter = this->level_Parameter;
+			level1_Parameter.initBasicParameter("lv1", 0, 0, NUM_LEDS);
+			level2_Parameter.initBasicParameter("lv2", 0, 0, NUM_LEDS);
+			hue_Parameter.initBasicParameter("hue", 200, 120, 255);
 		}
+
+		BasicParameter level1_Parameter;
+		BasicParameter level2_Parameter;
 
 		void draw( unsigned long _deltaMs );
 
@@ -459,11 +465,11 @@ void DualPower::draw ( unsigned long _deltaTime ) {
 		ledsHSV[i].sat = 200;
 	}
 
-	for ( int i = 0; i < level_Parameter.getValue()/2; i++ ) {
+	for ( int i = 0; i < level1_Parameter.getValue()/2; i++ ) {
 		ledsHSV[i].val = 255;
 		ledsHSV[i].hue = hue_Parameter.getValue();
 	}
-	for ( int i = NUM_LEDS-1; i > NUM_LEDS-1-level_Parameter.getValue()/2; i-- ) {
+	for ( int i = NUM_LEDS-1; i > NUM_LEDS-1-level2_Parameter.getValue()/2; i-- ) {
 		ledsHSV[i].val = 255;
 		byte hueTop = hue_Parameter.getValue() - 130;
 		ledsHSV[i].hue = hueTop;
@@ -474,4 +480,3 @@ void DualPower::draw ( unsigned long _deltaTime ) {
 		leds[i] = ledsHSV[NUM_LEDS-1-i];
 	}
 }
-*/

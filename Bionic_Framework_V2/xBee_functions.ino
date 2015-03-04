@@ -200,6 +200,9 @@ void getCommunications()
                 SERIAL_PRINTLN2();
               #endif
 
+              // Dispatch the message
+              osc_rx.dispatch("/eq", eqControl);
+
 
           }
           else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) SERIAL_PRINTLN2("Tx response - WHY???");

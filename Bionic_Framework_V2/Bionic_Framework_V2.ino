@@ -1,11 +1,13 @@
 // HAS TO BE AT TOP (for some reason...should figure out build order)
 #include "BasicParameter.h"
 
+#include "OSCBundle.h"
+
 // Uncomment to disable printing to Serial
-// #define SERIAL_PRINTING
+#define SERIAL_PRINTING
 #define SERIAL_PRINTING2
 // #define RX_PRINT_DATA_BYTES
-#define RX_PRINT_OSC_BYTES
+// #define RX_PRINT_OSC_BYTES
 
 // Uncomment to disable initial calibration of the MPU offsets
 //#define ENABLE_CALIBRATION
@@ -28,8 +30,8 @@ const byte transmissionPeriod = 15; // 30 -> ~30fps
 // ***************  ANIMATION *****************
 // ***************    FLAGS   *****************
 
-#define STARTING_ANIMATION SPARKLE
-#define AUTO_ANIMATION_CHANGER
+#define STARTING_ANIMATION DUALPOWER
+// #define AUTO_ANIMATION_CHANGER
 
 const unsigned long animationSwitchPeriod = 180 * 1000;
 
@@ -153,18 +155,18 @@ float *model_gyr_processed[2] = { &pitchPercentP,
 // ================================================================
 
 
-#define NUM_ANIMATIONS 2
+#define NUM_ANIMATIONS 3
 
 //Train train;
 // Fire fire;
 Sparkle sparkle;
 Power power;
-//DualPower dualpower;
+DualPower dualpower;
 //RunningRainbow runningrainbow;
 // Noise noise;
 
 // Initialize and list animation objects
-Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power };
+Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &dualpower};
 
 
 
@@ -172,8 +174,8 @@ enum AnimationState {
     // FIRE,
     // TRAIN,
     SPARKLE,
-    POWER
-//    DUALPOWER
+    POWER,
+    DUALPOWER
 //    RUNNINGRAINBOW
     // NOISE
 };
@@ -192,7 +194,7 @@ byte currentAnimation = STARTING_ANIMATION;
 // ================================================================
 
 
-#include <OSCBundle.h>
+// #include "OSCBundle.h"
 
 OSCMessage osc_tx;
 OSCMessage osc_rx;
@@ -275,6 +277,26 @@ XBeeResponse response = XBeeResponse();
 Rx16Response rx16 = Rx16Response(); // create reusable response objects for responses we expect to handle
 
 
+
+float eq[] = {0, 0};
+
+void eqControl(OSCMessage &msg) {
+    SERIAL_PRINTLN2("eqControl called back");
+
+    // Get size of message
+    uint8_t numData = msg.size();
+
+    // Load data entries into eq array
+    for( uint8_t dataIndex=0; dataIndex < numData; dataIndex++ ) {
+        if ( msg.isFloat(dataIndex) ) {
+            eq[dataIndex] = msg.getFloat(dataIndex);
+        }
+        else {
+            SERIAL_PRINT2("eqControl ERROR with dataIndex = ");
+            SERIAL_PRINTLN2(dataIndex);
+        }
+    }
+}
 
 
 // ================================================================

@@ -142,11 +142,7 @@ void getCommunications()
                 SERIAL_PRINT2("Response Length = "); SERIAL_PRINTLN2(responseLength);
                 SERIAL_PRINT2("Response DATA = ");
                 // Could use getData() below instead to return a pointer to the data array...
-                for ( byte i = 0; i < responseLength; i++ ) {
-                  packed_data[i] = rx16.getData(i);
-                  SERIAL_PRINT2(packed_data[i]);
-                  SERIAL_PRINT2(" ");
-                }
+                for ( byte i = 0; i < responseLength; i++ ) { SERIAL_PRINT2( rx16.getData(i) ); SERIAL_PRINT2(" "); }
                 SERIAL_PRINTLN2();
               #endif
 
@@ -157,16 +153,50 @@ void getCommunications()
 
               // OPTIONALLY print all the OSC contents...
               #ifdef RX_PRINT_OSC_BYTES
+
+                // Print the OSC Address
                 char addr[32];
                 SERIAL_PRINT2("OSC RX Address = ");
                 unsigned int addr_length = osc_rx.getAddress(addr, 0, responseLength);
-                for ( int i = 0; i < addr_length; i++ ) {
-                  SERIAL_PRINT2(addr[i]);
-                }
+                // Is this loop necesary for printing? How can I print a char array without looping through it?
+                for ( int i = 0; i < addr_length; i++ ) SERIAL_PRINT2(addr[i]);
                 SERIAL_PRINTLN2();
-                // for ( int i = addr_length; i < packed_data_length; i++ ){
 
-                // }
+                // Print the OSC contents
+                // Get the number of data entries
+                uint8_t numData = osc_rx.size();
+                SERIAL_PRINT2("Num OSC data = "); SERIAL_PRINTLN2(numData);
+                for ( uint8_t dataIndex = 0; dataIndex < numData; dataIndex++ ){
+                  // Print the data at this address...
+                  char dataType = osc_rx.getType( dataIndex );
+                  switch (dataType) {
+
+                    case 'i': {
+                      SERIAL_PRINT2("Integer found: ");
+                      SERIAL_PRINTLN2( osc_rx.getInt(dataIndex) );
+                      break;
+                    }
+
+                    case 'f': {
+                      SERIAL_PRINT2("Float found: ");
+                      SERIAL_PRINTLN2( osc_rx.getFloat(dataIndex) );
+                      break;
+                    }
+
+                    case 's': {
+                      SERIAL_PRINT2("String found: ");
+                      char dataString[32];
+                      uint8_t stringLength = osc_rx.getString(dataIndex, dataString, 32);
+                      SERIAL_PRINTLN2(dataString); // Can print like this because the string is null terminated
+                      break;
+                    }
+
+                    default: {
+                      SERIAL_PRINTLN2("Unhandled OSC data type");
+                      break;
+                    }
+                  }
+                }
                 SERIAL_PRINTLN2();
               #endif
 

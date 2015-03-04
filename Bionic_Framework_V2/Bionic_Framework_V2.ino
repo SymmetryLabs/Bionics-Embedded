@@ -4,9 +4,40 @@
 // Uncomment to disable printing to Serial
 // #define SERIAL_PRINTING
 #define SERIAL_PRINTING2
+// #define RX_PRINT_DATA_BYTES
+#define RX_PRINT_OSC_BYTES
 
 // Uncomment to disable initial calibration of the MPU offsets
 //#define ENABLE_CALIBRATION
+
+
+// ***************    XBEE    *****************
+// ***************    FLAGS   *****************
+
+// #define SEND_INITIAL_TRANSMISSION
+#define SEND_TRANSMISSION
+
+const bool LIMIT_TRANSMISSION_RATE = false;
+const byte transmissionPeriod = 15; // 30 -> ~30fps
+
+// ********************************************
+// ********************************************
+
+
+
+// ***************  ANIMATION *****************
+// ***************    FLAGS   *****************
+
+#define STARTING_ANIMATION SPARKLE
+#define AUTO_ANIMATION_CHANGER
+
+const unsigned long animationSwitchPeriod = 180 * 1000;
+
+// ********************************************
+// ********************************************
+
+
+
 
 #ifdef SERIAL_PRINTING
     #define SERIAL_PRINT(x) Serial.print(x)
@@ -121,16 +152,6 @@ float *model_gyr_processed[2] = { &pitchPercentP,
 // ===                    Animation SETUP                     ===
 // ================================================================
 
-// ********************************************
-// ***************    FLAGS   *****************
-
-#define STARTING_ANIMATION SPARKLE
-#define AUTO_ANIMATION_CHANGER
-
-const unsigned long animationSwitchPeriod = 180 * 1000;
-
-// ********************************************
-// ********************************************
 
 #define NUM_ANIMATIONS 2
 
@@ -210,19 +231,6 @@ class OSCBuffer : public Print {
 // ================================================================
 // ===                    XBEE SETUP                     ===
 // ================================================================
-
-// ********************************************
-// ***************    FLAGS   *****************
-
-// #define SEND_INITIAL_TRANSMISSION
-#define SEND_TRANSMISSION
-
-const bool LIMIT_TRANSMISSION_RATE = false;
-const byte transmissionPeriod = 15; // 30 -> ~30fps
-
-// ********************************************
-// ********************************************
-
 
 
 #include "XBee.h"

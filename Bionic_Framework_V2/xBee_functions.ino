@@ -133,34 +133,44 @@ void getCommunications()
               SERIAL_PRINTLN2("RX16 response");
               xbee.getResponse().getRx16Response(rx16);
 
-              // Unload into packed_data
+              // Get lenght of reponse in bytes, for unloading into OSC
               byte responseLength = rx16.getDataLength();
-              SERIAL_PRINT2("Response Length = "); SERIAL_PRINTLN2(responseLength);
-              // SERIAL_PRINT("Printing received data ");
-              for ( byte i = 0; i < responseLength; i++ ) {
-                packed_data[i] = rx16.getData(i);
-                SERIAL_PRINT2(packed_data[i]);
-                SERIAL_PRINT2(" ");
-              }
-              SERIAL_PRINTLN2();
-              
-              packed_data_length = responseLength;
 
-              // readAndPrintElements();
+
+              // OPTIONALLY print all the reponse bytes...
+              #ifdef RX_PRINT_DATA_BYTES
+                SERIAL_PRINT2("Response Length = "); SERIAL_PRINTLN2(responseLength);
+                SERIAL_PRINT2("Response DATA = ");
+                // Could use getData() below instead to return a pointer to the data array...
+                for ( byte i = 0; i < responseLength; i++ ) {
+                  packed_data[i] = rx16.getData(i);
+                  SERIAL_PRINT2(packed_data[i]);
+                  SERIAL_PRINT2(" ");
+                }
+                SERIAL_PRINTLN2();
+              #endif
+
 
               // Unpack bytes in OSC message
-              char addr[32];
-              osc_rx.fill( packed_data, packed_data_length );
-              SERIAL_PRINT2("OSC RX Address = ");
-              unsigned int addr_length = osc_rx.getAddress(addr, 0, packed_data_length);
-              for ( int i = 0; i < addr_length; i++ ) {
-                SERIAL_PRINT2(addr[i]);
-              }
-              SERIAL_PRINTLN2();
-              // for ( int i = addr_length; i < packed_data_length; i++ ){
+              osc_rx.fill( rx16.getData(), responseLength );
 
-              // }
-              SERIAL_PRINTLN2();
+
+              // OPTIONALLY print all the OSC contents...
+              #ifdef RX_PRINT_OSC_BYTES
+                char addr[32];
+                SERIAL_PRINT2("OSC RX Address = ");
+                unsigned int addr_length = osc_rx.getAddress(addr, 0, responseLength);
+                for ( int i = 0; i < addr_length; i++ ) {
+                  SERIAL_PRINT2(addr[i]);
+                }
+                SERIAL_PRINTLN2();
+                // for ( int i = addr_length; i < packed_data_length; i++ ){
+
+                // }
+                SERIAL_PRINTLN2();
+              #endif
+
+
           }
           else if (xbee.getResponse().getApiId() == TX_STATUS_RESPONSE) SERIAL_PRINTLN2("Tx response - WHY???");
       }

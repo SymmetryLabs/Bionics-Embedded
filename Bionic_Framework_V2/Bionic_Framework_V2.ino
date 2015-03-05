@@ -30,7 +30,7 @@ const byte transmissionPeriod = 15; // 30 -> ~30fps
 // ***************  ANIMATION *****************
 // ***************    FLAGS   *****************
 
-#define STARTING_ANIMATION DUALPOWER
+#define STARTING_ANIMATION SPARKLE
 // #define AUTO_ANIMATION_CHANGER
 
 const unsigned long animationSwitchPeriod = 180 * 1000;

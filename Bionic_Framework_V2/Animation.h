@@ -183,7 +183,7 @@ class Sparkle : public Animation {
 	public:
 		Sparkle() {
 			// Model parameters
-			decay_Parameter.initBasicParameter("dec", 8, 5, 25); // What's a value that's physically intuitive?
+			decay_Parameter.initBasicParameter("dec", 0.35, 0.1, 0.5); // What's a value that's physically intuitive?
 			level_Parameter.initBasicParameter("lvl", 3, 1, 7);
 			hue_Parameter.initBasicParameter("hue", 150, 80, 200);
 
@@ -221,7 +221,8 @@ void Sparkle::draw ( unsigned long _deltaTime ) {
 //                if ( ledsHSV[i].val > 200 ) decrement = decay_Parameter.getValue();
 //                else if ( ledsHSV[i].val > 150 ) decrement = decay_Parameter.getValue()*2/3;
 //                else if ( ledsHSV[i].val > 50 ) decrement = decay_Parameter.getValue()/3;
-		ledsHSV[i].val = qsub8( ledsHSV[i].val, decay_Parameter.getValue() );
+		float decayDelta = decay_Parameter.getValue()*float(_deltaTime);
+		ledsHSV[i].val = qsub8( ledsHSV[i].val, decayDelta );
 		// ledsHSV[i].val = qsub8( ledsHSV[i].val, decrement );
 		ledsHSV[i].hue = hue_Parameter.getValue();
 //		ledsHSV[i].hue = 200;

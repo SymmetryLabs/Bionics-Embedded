@@ -275,7 +275,7 @@ class Power : public Animation {
 	public:
 		Power() {
 			// Model parameters
-			decay_Parameter.initBasicParameter("dec", 25, 5, 25); // What's a value that's physically intuitive?
+			decay_Parameter.initBasicParameter("dec", 0.35, 0.1, 0.5); // What's a value that's physically intuitive?
 			level_Parameter.initBasicParameter("lvl", 0, 0, NUM_LEDS);
 			hue_Parameter.initBasicParameter("hue", 150, 120, 255); // Trip is 200
 
@@ -296,7 +296,8 @@ class Power : public Animation {
 void Power::draw ( unsigned long _deltaTime ) {
 	// Decrement the brightness
 	for( int i = 0; i < NUM_LEDS; i++ ) {
-		ledsHSV[i].val = qsub8( ledsHSV[i].val, int(decay_Parameter.getValue()) );
+		float decayDelta = decay_Parameter.getValue()*float(_deltaTime);
+		ledsHSV[i].val = qsub8( ledsHSV[i].val, decayDelta );
 		ledsHSV[i].hue = hue_Parameter.getValue();
 		ledsHSV[i].sat = 200;
 	}
@@ -443,7 +444,7 @@ class DualPower : public Animation {
 	public:
 		DualPower() {
 			// Model parameters
-			decay_Parameter.initBasicParameter("dec", 35, 5, 35); // What's a value that's physically intuitive?
+			decay_Parameter.initBasicParameter("dec", 0.35, 0.1, 0.5); // What's a value that's physically intuitive?
 			// This probably does not make level1 and level the same construct...
 			level1_Parameter = this->level_Parameter;
 			level1_Parameter.initBasicParameter("lv1", 0, 0, NUM_LEDS);
@@ -462,7 +463,8 @@ class DualPower : public Animation {
 void DualPower::draw ( unsigned long _deltaTime ) {
 	// Decrement the brightness
 	for( int i = 0; i < NUM_LEDS; i++ ) {
-		ledsHSV[i].val = qsub8( ledsHSV[i].val, int(decay_Parameter.getValue()) );
+		float decayDelta = decay_Parameter.getValue()*float(_deltaTime);
+		ledsHSV[i].val = qsub8( ledsHSV[i].val, decayDelta );
 		ledsHSV[i].sat = 200;
 	}
 

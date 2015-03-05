@@ -30,7 +30,7 @@ const byte transmissionPeriod = 15; // 30 -> ~30fps
 // ***************  ANIMATION *****************
 // ***************    FLAGS   *****************
 
-#define STARTING_ANIMATION SPARKLE
+#define STARTING_ANIMATION FIRE
 // #define AUTO_ANIMATION_CHANGER
 
 const unsigned long animationSwitchPeriod = 180 * 1000;
@@ -155,10 +155,10 @@ float *model_gyr_processed[2] = { &pitchPercentP,
 // ================================================================
 
 
-#define NUM_ANIMATIONS 3
+#define NUM_ANIMATIONS 4
 
 //Train train;
-// Fire fire;
+Fire fire;
 Sparkle sparkle;
 Power power;
 DualPower dualpower;
@@ -166,12 +166,12 @@ DualPower dualpower;
 // Noise noise;
 
 // Initialize and list animation objects
-Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &dualpower};
+Animation *animations[NUM_ANIMATIONS] = { &fire, &sparkle, &power, &dualpower };
 
 
 
 enum AnimationState {
-    // FIRE,
+    FIRE,
     // TRAIN,
     SPARKLE,
     POWER,
@@ -280,16 +280,16 @@ Rx16Response rx16 = Rx16Response(); // create reusable response objects for resp
 
 float eq[] = {0, 0};
 
-void eqControl(OSCMessage &msg) {
+void eqControl(OSCMessage &_msg) {
     SERIAL_PRINTLN2("eqControl called back");
 
     // Get size of message
-    uint8_t numData = msg.size();
+    uint8_t numData = _msg.size();
 
     // Load data entries into eq array
     for( uint8_t dataIndex=0; dataIndex < numData; dataIndex++ ) {
-        if ( msg.isFloat(dataIndex) ) {
-            eq[dataIndex] = msg.getFloat(dataIndex);
+        if ( _msg.isFloat(dataIndex) ) {
+            eq[dataIndex] = _msg.getFloat(dataIndex);
         }
         else {
             SERIAL_PRINT2("eqControl ERROR with dataIndex = ");

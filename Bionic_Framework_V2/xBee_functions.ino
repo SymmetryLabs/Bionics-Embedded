@@ -153,51 +153,7 @@ void getCommunications()
 
               // OPTIONALLY print all the OSC contents...
               #ifdef RX_PRINT_OSC_BYTES
-
-                // Print the OSC Address
-                char addr[32];
-                SERIAL_PRINT2("OSC RX Address = ");
-                unsigned int addr_length = osc_rx.getAddress(addr, 0, responseLength);
-                // Is this loop necesary for printing? How can I print a char array without looping through it?
-                for ( int i = 0; i < addr_length; i++ ) SERIAL_PRINT2(addr[i]);
-                SERIAL_PRINTLN2();
-
-                // Print the OSC contents
-                // Get the number of data entries
-                uint8_t numData = osc_rx.size();
-                SERIAL_PRINT2("Num OSC data = "); SERIAL_PRINTLN2(numData);
-                for ( uint8_t dataIndex = 0; dataIndex < numData; dataIndex++ ){
-                  // Print the data at this address...
-                  char dataType = osc_rx.getType( dataIndex );
-                  switch (dataType) {
-
-                    case 'i': {
-                      SERIAL_PRINT2("Integer found: ");
-                      SERIAL_PRINTLN2( osc_rx.getInt(dataIndex) );
-                      break;
-                    }
-
-                    case 'f': {
-                      SERIAL_PRINT2("Float found: ");
-                      SERIAL_PRINTLN2( osc_rx.getFloat(dataIndex) );
-                      break;
-                    }
-
-                    case 's': {
-                      SERIAL_PRINT2("String found: ");
-                      char dataString[32];
-                      uint8_t stringLength = osc_rx.getString(dataIndex, dataString, 32);
-                      SERIAL_PRINTLN2(dataString); // Can print like this because the string is null terminated
-                      break;
-                    }
-
-                    default: {
-                      SERIAL_PRINTLN2("Unhandled OSC data type");
-                      break;
-                    }
-                  }
-                }
-                SERIAL_PRINTLN2();
+                printOSCMessage(osc_rx, responseLength);
               #endif
 
               // Dispatch the message
@@ -213,4 +169,52 @@ void getCommunications()
 
     osc_rx.empty();
 //    SERIAL_PRINTLN2();
+}
+
+
+void printOSCMessage( OSCMessage &_msg , byte _msgLength ) {
+  // Print the OSC Address
+  char addr[32];
+  SERIAL_PRINT2("OSC RX Address = ");
+  unsigned int addr_length = _msg.getAddress(addr, 0, _msgLength);
+  // Is this loop necesary for printing? How can I print a char array without looping through it?
+  for ( int i = 0; i < addr_length; i++ ) SERIAL_PRINT2(addr[i]);
+  SERIAL_PRINTLN2();
+
+  // Print the OSC contents
+  // Get the number of data entries
+  uint8_t numData = _msg.size();
+  SERIAL_PRINT2("Num OSC data = "); SERIAL_PRINTLN2(numData);
+  for ( uint8_t dataIndex = 0; dataIndex < numData; dataIndex++ ){
+    // Print the data at this address...
+    char dataType = _msg.getType( dataIndex );
+    switch (dataType) {
+
+      case 'i': {
+        SERIAL_PRINT2("Integer found: ");
+        SERIAL_PRINTLN2( _msg.getInt(dataIndex) );
+        break;
+      }
+
+      case 'f': {
+        SERIAL_PRINT2("Float found: ");
+        SERIAL_PRINTLN2( _msg.getFloat(dataIndex) );
+        break;
+      }
+
+      case 's': {
+        SERIAL_PRINT2("String found: ");
+        char dataString[32];
+        uint8_t stringLength = _msg.getString(dataIndex, dataString, 32);
+        SERIAL_PRINTLN2(dataString); // Can print like this because the string is null terminated
+        break;
+      }
+
+      default: {
+        SERIAL_PRINTLN2("Unhandled OSC data type");
+        break;
+      }
+    }
+  }
+  SERIAL_PRINTLN2();
 }

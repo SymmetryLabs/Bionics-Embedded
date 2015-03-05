@@ -88,6 +88,11 @@ void LEDrun() {
             break;
         }
 
+        case FIRE:
+        {
+            break;
+        }
+
         default:
         {
             SERIAL_PRINTLN("ERROR!!! Running an unsupported animation from LEDrun()");

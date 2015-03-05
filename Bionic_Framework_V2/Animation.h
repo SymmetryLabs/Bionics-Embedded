@@ -28,16 +28,22 @@ class Animation {
 // ===                     FIRE ANIMATION                       ===
 // ================================================================
 
-/*
+
 class Fire : public Animation {
 
 	public:
+		Fire() {
+			diffusionParameter.initBasicParameter("diff", 1, 0, 1);
+			coolingParameter.initBasicParameter("cool", 100, 20, 100);
+			sparkingParameter.initBasicParameter("spar", 50, 50, 200);
+		}
+
 		// Model parameters
 		// BasicParameter diffusionConstant = new BasicParameter();
 		// What should ranges be for these parameters?  How do they affect time-based animations?
-		BasicParameter diffusionParameter = BasicParameter("diff", 1, 0, 1);
-		BasicParameter coolingParameter = BasicParameter("cool", 100, 20, 100);
-		BasicParameter sparkingParameter = BasicParameter("spar", 50, 50, 200);
+		BasicParameter diffusionParameter;
+		BasicParameter coolingParameter;
+		BasicParameter sparkingParameter;
 
 		void draw( unsigned long _deltaTime );
 
@@ -57,11 +63,7 @@ void Fire::draw ( unsigned long _deltaTime ) {
 	// Push model to LEDs
     for( int j = 0; j < NUM_LEDS; j++) {
         leds[j] = heatColor( heat[j] );
-        SERIAL_PRINTLN(heat[j]);
-        SERIAL_PRINTLN(leds[j]);
-        SERIAL_PRINTLN(leds[j]);
-        SERIAL_PRINTLN(leds[j]);
-        SERIAL_PRINTLN();
+        // SERIAL_PRINTLN(heat[j]); SERIAL_PRINTLN(leds[j]);
     }
 }
 
@@ -120,7 +122,7 @@ CRGB Fire::heatColor ( uint8_t _temperature ) {
   return heatcolor;
 }
 
-*/
+
 
 
 // ================================================================
@@ -184,7 +186,7 @@ class Sparkle : public Animation {
 		Sparkle() {
 			// Model parameters
 			decay_Parameter.initBasicParameter("dec", 0.35, 0.1, 0.5); // What's a value that's physically intuitive?
-			level_Parameter.initBasicParameter("lvl", 3, 1, 7);
+			level_Parameter.initBasicParameter("lvl", 3, 1, 5);
 			hue_Parameter.initBasicParameter("hue", 150, 80, 200);
 
 			lastSpark = 0;

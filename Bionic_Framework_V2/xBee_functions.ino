@@ -158,6 +158,7 @@ void getCommunications()
 
               // Dispatch the message
               osc_rx.dispatch("/eq", eqControl);
+              osc_rx.dispatch("/midi/cc", midiControl);
 
 
           }

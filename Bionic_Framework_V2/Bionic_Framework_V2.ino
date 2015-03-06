@@ -4,10 +4,10 @@
 #include "OSCBundle.h"
 
 // Uncomment to disable printing to Serial
-#define SERIAL_PRINTING
+//#define SERIAL_PRINTING
 #define SERIAL_PRINTING2
 // #define RX_PRINT_DATA_BYTES
-// #define RX_PRINT_OSC_BYTES
+ #define RX_PRINT_OSC_BYTES
 
 // Uncomment to disable initial calibration of the MPU offsets
 //#define ENABLE_CALIBRATION
@@ -30,7 +30,7 @@ const byte transmissionPeriod = 15; // 30 -> ~30fps
 // ***************  ANIMATION *****************
 // ***************    FLAGS   *****************
 
-#define STARTING_ANIMATION FIRE
+#define STARTING_ANIMATION POWER
 // #define AUTO_ANIMATION_CHANGER
 
 const unsigned long animationSwitchPeriod = 180 * 1000;
@@ -296,6 +296,41 @@ void eqControl(OSCMessage &_msg) {
             SERIAL_PRINTLN2(dataIndex);
         }
     }
+}
+
+void midiControl( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("midiControl called back");
+    // data = [ int channel, int number, int value ]
+    // channel = 2 for rotary
+    // number = which knob
+    // value -> 0-127
+
+    enum MidiFighterData {
+        PROPERTY = 0,
+        KNOB = 1,
+        VALUE = 2
+    };
+
+    enum MidiFighterProperty {
+        SWITCH = 1,
+        ROTARY = 0
+    };
+
+    // Only deal with rotary for now
+    if ( _msg.getInt(PROPERTY) == ROTARY ) {
+//      if ( _msg.getInt(0) == 2 ) {
+
+        uint8_t knob = _msg.getInt(KNOB);
+        SERIAL_PRINT2("knob = "); SERIAL_PRINTLN2(knob);
+
+        uint8_t value = _msg.getInt(VALUE);
+        SERIAL_PRINT2("value = "); SERIAL_PRINTLN2(value);
+        
+        // Select which animation parameter with NUMBER
+        if ( knob < 4 ) animations[ currentAnimation ]->parameters[ knob ]->setPercent( float(value)/127. );
+
+    }
+
 }
 
 

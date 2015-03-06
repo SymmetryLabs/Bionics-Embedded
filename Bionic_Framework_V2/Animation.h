@@ -20,6 +20,8 @@ class Animation {
 		BasicParameter decay_Parameter; // What's a value that's physically intuitive?
 		BasicParameter level_Parameter;
 		BasicParameter hue_Parameter;
+
+		BasicParameter *parameters[4];
 };
 
 
@@ -34,8 +36,13 @@ class Fire : public Animation {
 	public:
 		Fire() {
 			diffusionParameter.initBasicParameter("diff", 1, 0, 1);
-			coolingParameter.initBasicParameter("cool", 100, 20, 100);
+			coolingParameter.initBasicParameter("cool", 20, 20, 100);
 			sparkingParameter.initBasicParameter("spar", 50, 50, 200);
+
+			parameters[0] = &diffusionParameter;
+			parameters[1] = &coolingParameter;
+			parameters[2] = &sparkingParameter;
+			parameters[3] = NULL;
 		}
 
 		// Model parameters
@@ -75,7 +82,7 @@ void Fire::runModel ( unsigned long _deltaTime ) {
     }
 
 	// Run diffusion
-	for( int k = NUM_LEDS - 3; k > 0; k-- ) {
+	for( int k = NUM_LEDS - 1; k >=2 ; k-- ) {
       heat[k] = diffusionParameter.getValue() * (heat[k - 1] + heat[k - 2] + heat[k - 2] ) / 3;
     }
 
@@ -189,6 +196,11 @@ class Sparkle : public Animation {
 			level_Parameter.initBasicParameter("lvl", 3, 1, 5);
 			hue_Parameter.initBasicParameter("hue", 150, 80, 200);
 
+			parameters[0] = &decay_Parameter;
+			parameters[1] = &level_Parameter;
+			parameters[2] = &hue_Parameter;
+			parameters[3] = &hue_Parameter;
+
 			lastSpark = 0;
 			lastDimming = 0;
 			sparkPeriod = 200;
@@ -277,9 +289,14 @@ class Power : public Animation {
 	public:
 		Power() {
 			// Model parameters
-			decay_Parameter.initBasicParameter("dec", 0.35, 0.1, 0.5); // What's a value that's physically intuitive?
+			decay_Parameter.initBasicParameter("dec", 1.5, 0.1, 1.5); // What's a value that's physically intuitive?
 			level_Parameter.initBasicParameter("lvl", 0, 0, NUM_LEDS);
-			hue_Parameter.initBasicParameter("hue", 150, 120, 255); // Trip is 200
+			hue_Parameter.initBasicParameter("hue", 150, 0, 255); // Trip is 200
+
+			parameters[0] = &decay_Parameter;
+			parameters[1] = &level_Parameter;
+			parameters[2] = &hue_Parameter;
+			parameters[3] = &hue_Parameter;
 
 			long lastSpark = 0;
 			long lastDimming = 0;
@@ -375,6 +392,12 @@ class Noise : public Animation {
 			decay_Parameter.initBasicParameter("dec", 5, 1, 255); // What's a value that's physically intuitive?
 			level_Parameter.initBasicParameter("lvl", 0, 0, 255);
 			hue_Parameter.initBasicParameter("hue", 120, 0, 150);
+
+			parameters[0] = &decay_Parameter;
+			parameters[1] = &level_Parameter;
+			parameters[2] = &hue_Parameter;
+			parameters[3] = &hue_Parameter;
+			
 			x = random16();
 			y = random16();
 			z = random16();
@@ -452,6 +475,11 @@ class DualPower : public Animation {
 			level1_Parameter.initBasicParameter("lv1", 0, 0, NUM_LEDS);
 			level2_Parameter.initBasicParameter("lv2", 0, 0, NUM_LEDS);
 			hue_Parameter.initBasicParameter("hue", 200, 120, 255);
+
+			parameters[0] = &decay_Parameter;
+			parameters[1] = &level1_Parameter;
+			parameters[2] = &level2_Parameter;
+			parameters[3] = &hue_Parameter;
 		}
 
 		BasicParameter level1_Parameter;

@@ -90,6 +90,7 @@ void LEDrun() {
 
         case FIRE:
         {
+            random16_add_entropy( random());
             break;
         }
 

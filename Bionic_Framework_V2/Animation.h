@@ -11,17 +11,19 @@ class Animation {
 		// Construction
 		Animation() {}
 
-		// Draw routine, to be called every run
+		// Draw routine, to be callead every run
 		// Setting =0 makes it a pure virtual function
 		// Responsible function for changing the leds[] array
 		virtual void draw( unsigned long _deltaTime ) = 0;
+		// void addTuningParameters( &_basic_Parameter );
 		// void draw( unsigned long _deltaTime ) = 0;
 
 		BasicParameter decay_Parameter; // What's a value that's physically intuitive?
 		BasicParameter level_Parameter;
 		BasicParameter hue_Parameter;
 
-		BasicParameter *parameters[4];
+		BasicParameter *parameters[16];
+
 };
 
 

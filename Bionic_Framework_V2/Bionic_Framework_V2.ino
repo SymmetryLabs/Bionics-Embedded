@@ -4,7 +4,7 @@
 #include "OSCBundle.h"
 
 // Uncomment to disable printing to Serial
-//#define SERIAL_PRINTING
+#define SERIAL_PRINTING
 #define SERIAL_PRINTING2
 // #define RX_PRINT_DATA_BYTES
  #define RX_PRINT_OSC_BYTES
@@ -38,6 +38,10 @@ const unsigned long animationSwitchPeriod = 180 * 1000;
 // ********************************************
 // ********************************************
 
+// Select which unit
+//#define UNIT_TRIP
+#define UNIT_DEFAULT
+// #define UNIT_ZERO
 
 
 
@@ -77,8 +81,6 @@ CHSV ledsHSV[NUM_LEDS];
 // Had to move this to main file for proper dependencies...
 #include "Animation.h"
 
-// Select which unit
-//#define UNIT_TRIP
 
 
 // Initial stuff for MPU

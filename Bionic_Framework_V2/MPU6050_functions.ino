@@ -70,17 +70,17 @@ float euler[3];         // [psi, theta, phi]    Euler angle container
 
 
 // For Calibration
-#ifdef UNIT_TRIP
-  long offsets[6] = { -1243, -1034, 641, 86, 20, -19 }; // Trip's UNIT
-#elif UNIT_ZERO
-  long offsets[6] = { 0, 0, 0, 0, 0, 0 };
-#else
-  long offsets[6] = { -1243, -1034, 641, 86, 20, -19 };
-#endif
-  
-//long offsets[6] = { -6046, 832, 2391, 0, 0, 0 };
+// #ifdef UNIT_TRIP
+    // long offsets[6] = { -1243, -1034, 641, 86, 20, -19 }; // Trip's UNIT
+// #elseif UNIT_ZERO
+    // long offsets[6] = { 0, 0, 0, 0, 0, 0 };
+// #elseif UNIT_DEFAULT
+    long offsets[6] = { 0, 0, 1788, 220, 76, -85 };
+// #else
+    // long offsets[6] = { -1243, -1034, 641, 86, 20, -19 };
+// #endif
 
-                    
+
 enum OFFSET_TYPE {
     ACCEL_X,
     ACCEL_Y,
@@ -118,12 +118,17 @@ void MPUsetup() {
     devStatus = mpu.dmpInitialize();
 
     // supply your own gyro offsets here, scaled for min sensitivity
-    mpu.setXGyroOffset( offsets[GYRO_X] );
-    mpu.setYGyroOffset( offsets[GYRO_Y] );
-    mpu.setZGyroOffset( offsets[GYRO_Z] );
-    mpu.setXAccelOffset( offsets[ACCEL_X] );
-    mpu.setYAccelOffset( offsets[ACCEL_Y] );
-    mpu.setZAccelOffset( offsets[ACCEL_Z] );
+    // mpu.setXGyroOffset( offsets[GYRO_X] );
+    // mpu.setYGyroOffset( offsets[GYRO_Y] );
+    // mpu.setZGyroOffset( offsets[GYRO_Z] );
+    // mpu.setXAccelOffset( offsets[ACCEL_X] );
+    // mpu.setYAccelOffset( offsets[ACCEL_Y] );
+    // mpu.setZAccelOffset( offsets[ACCEL_Z] );
+
+    mpu.setXGyroOffset(220);
+    mpu.setYGyroOffset(76);
+    mpu.setZGyroOffset(-85);
+    mpu.setZAccelOffset(1788); // 1688 factory default for my test chip
 
     // make sure it worked (returns 0 if so)
     if (devStatus == 0) {

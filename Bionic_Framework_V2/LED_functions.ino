@@ -76,7 +76,7 @@ void LEDrun() {
             break;
         }
 
-        case DUALPOWER:
+        /*case DUALPOWER:
         {
             SERIAL_PRINT2("EQ[0] = "); SERIAL_PRINTLN2(eq[0]);
             SERIAL_PRINT2("EQ[1] = "); SERIAL_PRINTLN2(eq[1]);
@@ -97,7 +97,7 @@ void LEDrun() {
         default:
         {
             SERIAL_PRINTLN("ERROR!!! Running an unsupported animation from LEDrun()");
-        }
+        }*/
     }
 
 

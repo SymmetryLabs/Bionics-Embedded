@@ -160,11 +160,15 @@ void getCommunications()
               osc_rx.dispatch("/eq", eqControl);
               osc_rx.dispatch("/midi/cc", midiControl);
 
-              
+              // Dispatch for selecting data reporting types
               osc_rx.dispatch("report/acc_r", setReport_ACC_R);
               osc_rx.dispatch("report/acc_p", setReport_ACC_P);
               osc_rx.dispatch("report/gyr_r", setReport_GYR_R);
               osc_rx.dispatch("report/gyr_p", setReport_GYR_P);
+
+              // Dispatch for selecting animations
+              osc_rx.dispatch("anim/power", setAnimation_Power);
+              osc_rx.dispatch("anim/sparkle", setAnimation_Sparkle);
 
 
           }

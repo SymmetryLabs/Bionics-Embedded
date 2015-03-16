@@ -22,6 +22,8 @@
 const bool LIMIT_TRANSMISSION_RATE = false;
 const byte transmissionPeriod = 15; // 30 -> ~30fps
 
+#define STARTING_REPORT_TYPE ACC_R
+
 // ********************************************
 // ********************************************
 
@@ -149,7 +151,7 @@ float *model_gyr_raw[3] = { &ypr[0],
 float *model_gyr_processed[2] = { &pitchPercentP,
                             &rollPercentP};
 
-byte currentReportType = ACC_R;
+byte currentReportType = STARTING_REPORT_TYPE;
 
 
 
@@ -158,27 +160,28 @@ byte currentReportType = ACC_R;
 // ================================================================
 
 
-#define NUM_ANIMATIONS 4
+#define NUM_ANIMATIONS 2
 
 //Train train;
-Fire fire;
+// Fire fire;
 Sparkle sparkle;
 Power power;
-DualPower dualpower;
+// DualPower dualpower;
 //RunningRainbow runningrainbow;
 // Noise noise;
 
 // Initialize and list animation objects
-Animation *animations[NUM_ANIMATIONS] = { &fire, &sparkle, &power, &dualpower };
+// Animation *animations[NUM_ANIMATIONS] = { &fire, &sparkle, &power, &dualpower };
+Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power };
 
 
 
 enum AnimationState {
-    FIRE,
+    // FIRE,
     // TRAIN,
     SPARKLE,
-    POWER,
-    DUALPOWER
+    POWER
+    // DUALPOWER
 //    RUNNINGRAINBOW
     // NOISE
 };
@@ -354,6 +357,16 @@ void setReport_GYR_R( OSCMessage &_msg ) {
 void setReport_GYR_P( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("setReport_GYR_P called back");
     currentReportType = GYR_P;
+}
+
+void setAnimation_Power( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setAnimation_Power called back");
+    currentAnimation = POWER;
+}
+
+void setAnimation_Sparkle( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setAnimation_Sparkle called back");
+    currentReportType = SPARKLE;
 }
 
 // ================================================================

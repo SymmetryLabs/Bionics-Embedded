@@ -60,7 +60,8 @@ void LEDrun() {
 
         case SPARKLE:
         {
-            animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+            // animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
+            animations[currentAnimation]->hue_Parameter.setPercent(huePercent);
 
             // Trigger if percent high enough
             if ( magnitudePercent > 0.2) {
@@ -72,6 +73,7 @@ void LEDrun() {
 
         case POWER:
         {
+            animations[currentAnimation]->hue_Parameter.setPercent(huePercent);
             animations[currentAnimation]->level_Parameter.setPercent(magnitudePercent);
             break;
         }

@@ -154,6 +154,8 @@ float *model_gyr_processed[2] = { &pitchPercentP,
 byte currentReportType = STARTING_REPORT_TYPE;
 
 
+float huePercent = 0.5;
+
 
 // ================================================================
 // ===                    Animation SETUP                     ===
@@ -304,6 +306,7 @@ void eqControl(OSCMessage &_msg) {
     }
 }
 
+
 void midiControl( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("midiControl called back");
     // data = [ int channel, int number, int value ]
@@ -339,6 +342,21 @@ void midiControl( OSCMessage &_msg ) {
 
 }
 
+
+void hueControl( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("hueControl called back");
+
+    if ( _msg.isFloat(0) ) {
+        huePercent = _msg.getFloat(0);
+        SERIAL_PRINT2("huePercent = ");
+        SERIAL_PRINTLN2(huePercent);
+    }
+    else {
+        SERIAL_PRINT2("hueControl ERROR");
+    }
+}
+
+
 void setReport_ACC_R( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("setReport_ACC_R called back");
     currentReportType = ACC_R;
@@ -368,6 +386,7 @@ void setAnimation_Sparkle( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("setAnimation_Sparkle called back");
     currentReportType = SPARKLE;
 }
+
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===

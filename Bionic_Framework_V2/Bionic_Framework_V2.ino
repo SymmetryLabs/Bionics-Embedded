@@ -149,6 +149,7 @@ float *model_gyr_raw[3] = { &ypr[0],
 float *model_gyr_processed[2] = { &pitchPercentP,
                             &rollPercentP};
 
+byte currentReportType = ACC_R;
 
 
 
@@ -335,6 +336,25 @@ void midiControl( OSCMessage &_msg ) {
 
 }
 
+void setReport_ACC_R( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setReport_ACC_R called back");
+    currentReportType = ACC_R;
+}
+
+void setReport_ACC_P( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setReport_ACC_P called back");
+    currentReportType = ACC_P;
+}
+
+void setReport_GYR_R( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setReport_GYR_R called back");
+    currentReportType = GYR_R;
+}
+
+void setReport_GYR_P( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setReport_GYR_P called back");
+    currentReportType = GYR_P;
+}
 
 // ================================================================
 // ===                      INITIAL SETUP                       ===
@@ -444,7 +464,7 @@ void loop() {
                     // Assume everything is a float
                     // packOSC( dataDictionary, lengthDictionary )
                     
-                    sendCommunications_Report( ACC_R );
+                    sendCommunications_Report( currentReportType );
 
 
                     // SELECT HERE WHICH COMMUNICATIONS TO SEND

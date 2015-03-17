@@ -167,25 +167,26 @@ float huePercent = 0.5;
 // ================================================================
 
 
-#define NUM_ANIMATIONS 2
+#define NUM_ANIMATIONS 3
 
 //Train train;
 Sparkle sparkle;
 Power power;
+DualPower dualpower;
 // DualPower dualpower;
 //RunningRainbow runningrainbow;
 // Noise noise;
 
 // Initialize and list animation objects
-// Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &dualpower };
-Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power };
+Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &dualpower };
 
 
 
 enum AnimationState {
     // TRAIN,
     SPARKLE,
-    POWER
+    POWER,
+    DUALPOWER
     // DUALPOWER
 //    RUNNINGRAINBOW
     // NOISE
@@ -402,7 +403,7 @@ void setAnimation_Sparkle( OSCMessage &_msg ) {
 
 void setAnimation_EQ( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("setAnimation_EQ called back");
-    currentAnimation = SPARKLE;
+    currentAnimation = DUALPOWER;
 }
 
 

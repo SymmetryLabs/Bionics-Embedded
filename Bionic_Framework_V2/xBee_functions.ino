@@ -177,6 +177,7 @@ void getCommunications()
               // Dispatch for selecting animations
               osc_rx.dispatch("anim/power", setAnimation_Power);
               osc_rx.dispatch("anim/sparkle", setAnimation_Sparkle);
+              osc_rx.dispatch("anim/eq", setAnimation_EQ);
 
 
           }

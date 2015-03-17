@@ -35,6 +35,12 @@ void packTx_Report_OSC( byte _commMessage ) {
         osc_tx.add( *model_gyr_processed[0] ).add( *model_gyr_processed[1] );
         break;
       }
+      case MIX: {
+        SERIAL_PRINTLN("Send MIX");
+        osc_tx.setAddress("/m/m");
+        osc_tx.add( *model_mix[0] ).add( *model_mix[1] );
+        break;
+      }
       default: {
         SERIAL_PRINTLN("OSC packed nothing");
         break;

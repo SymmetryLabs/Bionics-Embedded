@@ -22,7 +22,7 @@
 const bool LIMIT_TRANSMISSION_RATE = false;
 const byte transmissionPeriod = 15; // 30 -> ~30fps
 
-#define STARTING_REPORT_TYPE ACC_R
+#define STARTING_REPORT_TYPE MIX
 
 // ********************************************
 // ********************************************

@@ -165,6 +165,7 @@ void getCommunications()
               osc_rx.dispatch("report/acc_p", setReport_ACC_P);
               osc_rx.dispatch("report/gyr_r", setReport_GYR_R);
               osc_rx.dispatch("report/gyr_p", setReport_GYR_P);
+              osc_rx.dispatch("report/mix", setReport_MIX);
 
               // Dispatch for selecting animations
               osc_rx.dispatch("anim/power", setAnimation_Power);

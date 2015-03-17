@@ -69,7 +69,8 @@ enum CommMsgType {
     ACC_R,
     ACC_P,
     GYR_R,
-    GYR_P
+    GYR_P,
+    MIX
 };
 
 
@@ -150,6 +151,9 @@ float *model_gyr_raw[3] = { &ypr[0],
 
 float *model_gyr_processed[2] = { &pitchPercentP,
                             &rollPercentP};
+
+float *model_mix[2] = { &magnitudePercent,
+                            &ypr[2] };
 
 byte currentReportType = STARTING_REPORT_TYPE;
 
@@ -373,6 +377,11 @@ void setReport_GYR_R( OSCMessage &_msg ) {
 void setReport_GYR_P( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("setReport_GYR_P called back");
     currentReportType = GYR_P;
+}
+
+void setReport_MIX ( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setReport_MIX called back");
+    currentReportType = MIX;
 }
 
 void setAnimation_Power( OSCMessage &_msg ) {

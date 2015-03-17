@@ -70,7 +70,8 @@ enum CommMsgType {
     ACC_P,
     GYR_R,
     GYR_P,
-    MIX
+    MIX,
+    NONE
 };
 
 
@@ -384,6 +385,11 @@ void setReport_MIX ( OSCMessage &_msg ) {
     currentReportType = MIX;
 }
 
+void setReport_NONE ( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setReport_NONE called back");
+    currentReportType = NONE;
+}
+
 void setAnimation_Power( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("setAnimation_Power called back");
     currentAnimation = POWER;
@@ -391,7 +397,12 @@ void setAnimation_Power( OSCMessage &_msg ) {
 
 void setAnimation_Sparkle( OSCMessage &_msg ) {
     SERIAL_PRINTLN2("setAnimation_Sparkle called back");
-    currentReportType = SPARKLE;
+    currentAnimation = SPARKLE;
+}
+
+void setAnimation_EQ( OSCMessage &_msg ) {
+    SERIAL_PRINTLN2("setAnimation_EQ called back");
+    currentAnimation = SPARKLE;
 }
 
 

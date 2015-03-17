@@ -28,26 +28,27 @@ class Animation {
 
 };
 
+
 void Animation::shiftPixels ( float percentStripPerSecond, long deltaMs ) {
 	// How far do we shift the pixel?
 	// Can't move it more than the resolution of the pixel-space
 	int distanceToShift = round( percentStripPerSecond * float(NUM_LEDS) * deltaMs/1000. );
 	// Does this interface with an underlying segmentation of the LEDs?
 	// How do we make this time based?
-	if ( percentPerSecond > 0 ) {
-		for ( byte pixel = NUM_LEDS-1; pixel >= abs(distanceToShift); pixel--) {
-			leds[pixel] = leds[ pixel-abs(distanceToShift) ];
+	if ( percentStripPerSecond > 0 ) {
+		for ( int pixel = NUM_LEDS-1; pixel >= abs(distanceToShift); pixel--) {
+			leds[ pixel ] = leds[ pixel-abs(distanceToShift) ];
 		}
-		for ( byte pixel = abs(distanceToShift)-1; pixel >= 0; pixel-- ) {	// Won't execute if distance = 0
-			leds[pixel] = CRGB::Black;
+		for ( int pixel = abs(distanceToShift)-1; pixel >= 0; pixel-- ) {	// Won't execute if distance = 0
+			leds[ pixel ] = CRGB::Black;
 		}
 	}
-	else if ( percentPerSecond < 0 ) {
-		for ( byte pixel = 0; pixel < NUM_LEDS - abs(distanceToShift); pixel++ ) {
-			leds[pixel] = leds[ pixel+abs(distanceToShift) ];
+	else if ( percentStripPerSecond < 0 ) {
+		for ( int pixel = 0; pixel < NUM_LEDS - abs(distanceToShift); pixel++ ) {
+			leds[ pixel ] = leds[ pixel+abs(distanceToShift) ];
 		}
-		for ( byte pixel = NUM_LEDS-1 - abs(distanceToShift)); pixel < NUM_LEDS; pixel++ ) {	// Won't execute if distance = 0
-			leds[pixel] = CRGB::Black;
+		for ( int pixel = NUM_LEDS-1 - abs(distanceToShift); pixel < NUM_LEDS; pixel++ ) {	// Won't execute if distance = 0
+			leds[ pixel ] = CRGB::Black;
 		}
 	}
 	else {
@@ -144,6 +145,7 @@ class Sparkle : public Animation {
 
 	private:
 		void newSparkles();
+		void decay( byte _pixel, long _deltaMs );
 
 		unsigned long lastSpark;
 		unsigned long lastDimming;
@@ -156,19 +158,13 @@ class Sparkle : public Animation {
 };
 
 
-void Sparkle::draw ( unsigned long _deltaTime ) {
+void Sparkle::draw ( unsigned long _deltaMs ) {
 	// Decrement the brightness
-	for( int i = 0; i < NUM_LEDS; i++ ) {
-                // uint8_t decrement;
-//                if ( ledsHSV[i].val > 200 ) decrement = decay_Parameter.getValue();
-//                else if ( ledsHSV[i].val > 150 ) decrement = decay_Parameter.getValue()*2/3;
-//                else if ( ledsHSV[i].val > 50 ) decrement = decay_Parameter.getValue()/3;
-		float decayDelta = decay_Parameter.getValue()*float(_deltaTime);
-		ledsHSV[i].val = qsub8( ledsHSV[i].val, decayDelta );
+	for( int pixel = 0; pixel < NUM_LEDS; pixel++ ) {
+		decay( pixel, _deltaMs );
 		// ledsHSV[i].val = qsub8( ledsHSV[i].val, decrement );
-		ledsHSV[i].hue = hue_Parameter.getValue();
-//		ledsHSV[i].hue = 200;
-		ledsHSV[i].sat = 200;
+		ledsHSV[pixel].hue = hue_Parameter.getValue();
+		ledsHSV[pixel].sat = 200;
 	}
 
 	// Trigger random sparkles
@@ -186,6 +182,11 @@ void Sparkle::draw ( unsigned long _deltaTime ) {
 	for ( int i = 0; i < NUM_LEDS; i++ ) {
 		leds[i] = ledsHSV[i];
 	}
+}
+
+void Sparkle::decay( byte _pixel, long _deltaMs ) {
+	float decayDelta = decay_Parameter.getValue()*float(_deltaMs);
+	ledsHSV[_pixel].val = qsub8( ledsHSV[_pixel].val, decayDelta );
 }
 
 

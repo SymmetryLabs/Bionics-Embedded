@@ -24,113 +24,36 @@ class Animation {
 
 		BasicParameter *parameters[16];
 
+		void shiftPixels( float percentStripPerSecond, long deltaMs );
+
 };
 
-
-
-// ================================================================
-// ===                     FIRE ANIMATION                       ===
-// ================================================================
-
-
-class Fire : public Animation {
-
-	public:
-		Fire() {
-			diffusionParameter.initBasicParameter("diff", 1, 0, 1);
-			coolingParameter.initBasicParameter("cool", 20, 20, 100);
-			sparkingParameter.initBasicParameter("spar", 50, 50, 200);
-
-			parameters[0] = &diffusionParameter;
-			parameters[1] = &coolingParameter;
-			parameters[2] = &sparkingParameter;
-			parameters[3] = NULL;
+void Animation::shiftPixels ( float percentStripPerSecond, long deltaMs ) {
+	// How far do we shift the pixel?
+	// Can't move it more than the resolution of the pixel-space
+	int distanceToShift = round( percentStripPerSecond * float(NUM_LEDS) * deltaMs/1000. );
+	// Does this interface with an underlying segmentation of the LEDs?
+	// How do we make this time based?
+	if ( percentPerSecond > 0 ) {
+		for ( byte pixel = NUM_LEDS-1; pixel >= abs(distanceToShift); pixel--) {
+			leds[pixel] = leds[ pixel-abs(distanceToShift) ];
 		}
-
-		// Model parameters
-		// BasicParameter diffusionConstant = new BasicParameter();
-		// What should ranges be for these parameters?  How do they affect time-based animations?
-		BasicParameter diffusionParameter;
-		BasicParameter coolingParameter;
-		BasicParameter sparkingParameter;
-
-		void draw( unsigned long _deltaTime );
-
-	private:
-		// Initialize my internal model storage variables
-		uint8_t heat[NUM_LEDS];
-
-		void runModel( unsigned long _deltaTime );
-		CRGB heatColor( uint8_t _temperature );
-
-};
-
-
-void Fire::draw ( unsigned long _deltaTime ) {
-	runModel(_deltaTime);
-
-	// Push model to LEDs
-    for( int j = 0; j < NUM_LEDS; j++) {
-        leds[j] = heatColor( heat[j] );
-        // SERIAL_PRINTLN(heat[j]); SERIAL_PRINTLN(leds[j]);
-    }
+		for ( byte pixel = abs(distanceToShift)-1; pixel >= 0; pixel-- ) {	// Won't execute if distance = 0
+			leds[pixel] = CRGB::Black;
+		}
+	}
+	else if ( percentPerSecond < 0 ) {
+		for ( byte pixel = 0; pixel < NUM_LEDS - abs(distanceToShift); pixel++ ) {
+			leds[pixel] = leds[ pixel+abs(distanceToShift) ];
+		}
+		for ( byte pixel = NUM_LEDS-1 - abs(distanceToShift)); pixel < NUM_LEDS; pixel++ ) {	// Won't execute if distance = 0
+			leds[pixel] = CRGB::Black;
+		}
+	}
+	else {
+		// Do nothing because distance == 0
+	}
 }
-
-void Fire::runModel ( unsigned long _deltaTime ) {
-
-	// Run cooling
-	for( int i = 0; i < NUM_LEDS; i++ ) {
-      heat[i] = qsub8( heat[i],  random8(0, ((coolingParameter.getValue() * 10) / NUM_LEDS) + 2));
-    }
-
-	// Run diffusion
-	for( int k = NUM_LEDS - 1; k >=2 ; k-- ) {
-      heat[k] = diffusionParameter.getValue() * (heat[k - 1] + heat[k - 2] + heat[k - 2] ) / 3;
-    }
-
-	// Run sparking
-	if( random8() < sparkingParameter.getValue() ) {
-      int y = random8(7);
-      heat[y] = qadd8( heat[y], random8(160,255) );
-    }
-}
-
-CRGB Fire::heatColor ( uint8_t _temperature ) {
-	CRGB heatcolor;
- 
-  // Scale 'heat' down from 0-255 to 0-191,
-  // which can then be easily divided into three
-  // equal 'thirds' of 64 units each.
-  uint8_t t192 = scale8_video( _temperature, 192);
- 
-  // calculate a value that ramps up from
-  // zero to 255 in each 'third' of the scale.
-  uint8_t heatramp = t192 & 0x3F; // 0..63
-  heatramp <<= 2; // scale up to 0..252
- 
-  // now figure out which third of the spectrum we're in:
-  if( t192 & 0x80) {
-    // we're in the hottest third
-    heatcolor.r = 255; // full red
-    heatcolor.g = 255; // full green
-    heatcolor.b = heatramp; // ramp up blue
-   
-  } else if( t192 & 0x40 ) {
-    // we're in the middle third
-    heatcolor.r = 255; // full red
-    heatcolor.g = heatramp; // ramp up green
-    heatcolor.b = 0; // no blue
-   
-  } else {
-    // we're in the coolest third
-    heatcolor.r = heatramp; // ramp up red
-    heatcolor.g = 0; // no green
-    heatcolor.b = 0; // no blue
-  }
- 
-  return heatcolor;
-}
-
 
 
 
@@ -184,6 +107,9 @@ void Train::newTrain () {
 	for ( int node = 0; node < int(trainLength_Parameter.getValue()); node++ ) leds[node].setHSV( hue_Parameter.getValue(), 255, 255 );
 }
 */
+
+
+
 
 // ================================================================
 // ===                     SPARKLE ANIMATION                    ===
@@ -282,6 +208,8 @@ void Sparkle::trigger () {
 }
 
 
+
+
 // ================================================================
 // ===                   POWER BAR ANIMATION                    ===
 // ================================================================
@@ -333,6 +261,9 @@ void Power::draw ( unsigned long _deltaTime ) {
 	}
 }
 
+
+
+
 // ================================================================
 // ===              RUNNING RAINBOW ANIMATION                   ===
 // ================================================================
@@ -380,6 +311,8 @@ void RunningRainbow::draw ( unsigned long _deltaTime ) {
 	}
 }
 */
+
+
 
 
 // ================================================================

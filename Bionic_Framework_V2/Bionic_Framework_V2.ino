@@ -165,7 +165,6 @@ float huePercent = 0.5;
 #define NUM_ANIMATIONS 2
 
 //Train train;
-// Fire fire;
 Sparkle sparkle;
 Power power;
 // DualPower dualpower;
@@ -173,13 +172,12 @@ Power power;
 // Noise noise;
 
 // Initialize and list animation objects
-// Animation *animations[NUM_ANIMATIONS] = { &fire, &sparkle, &power, &dualpower };
+// Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power, &dualpower };
 Animation *animations[NUM_ANIMATIONS] = { &sparkle, &power };
 
 
 
 enum AnimationState {
-    // FIRE,
     // TRAIN,
     SPARKLE,
     POWER

@@ -6,11 +6,11 @@ void LEDsetup() {
 
     // For safety (to prevent too high of a power draw), the test case defaults to
     // setting brightness to 25% brightness
-    LEDS.setBrightness(255);
+    LEDS.setBrightness(200);
 
     // Put ws2801 strip on the hardware SPI pins with a BGR ordering of rgb and limited to a 1Mhz data rate
-    // LEDS.addLeds<WS2801, 11, 13, RGB, DATA_RATE_MHZ(1)>(leds, NUM_LEDS);
-    LEDS.addLeds<WS2801, 11, 13, BGR, DATA_RATE_MHZ(1)>(leds, NUM_LEDS);
+    LEDS.addLeds<WS2801, 11, 13, RGB, DATA_RATE_MHZ(1)>(leds, NUM_LEDS);
+    // LEDS.addLeds<WS2801, 11, 13, BGR, DATA_RATE_MHZ(1)>(leds, NUM_LEDS);
 
     lastAnimate = millis();
 

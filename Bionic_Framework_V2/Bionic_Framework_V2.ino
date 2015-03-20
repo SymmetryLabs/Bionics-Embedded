@@ -6,7 +6,7 @@
 // Uncomment to disable printing to Serial
 #define SERIAL_PRINTING
 #define SERIAL_PRINTING2
-// #define RX_PRINT_DATA_BYTES
+#define RX_PRINT_DATA_BYTES
  #define RX_PRINT_OSC_BYTES
 
 // Uncomment to disable initial calibration of the MPU offsets
@@ -23,6 +23,7 @@ const bool LIMIT_TRANSMISSION_RATE = false;
 const byte transmissionPeriod = 15; // 30 -> ~30fps
 
 #define STARTING_REPORT_TYPE MIX
+// #define STARTING_REPORT_TYPE ACC_R
 
 // ********************************************
 // ********************************************
@@ -442,6 +443,7 @@ void setup() {
 
     // Setup MPU
     SERIAL_PRINTLN("--");
+    LEDS.setBrightness(80);
     LEDS.showColor(CRGB::Red);
     MPUsetup();
     LEDS.showColor(CRGB::Black);
@@ -456,13 +458,15 @@ void setup() {
     SERIAL_PRINTLN(F("--------------------"));
     SERIAL_PRINTLN(F("--------------------")); SERIAL_PRINTLN();
     LEDS.showColor(CRGB::Green);
-    delay(250);
+    delay(100);
     LEDS.showColor(CRGB::Black);
-    delay(250);
+    delay(100);
     LEDS.showColor(CRGB::Green);
-    delay(250);
+    delay(100);
     LEDS.showColor(CRGB::Black);
-    delay(250);
+    delay(100);
+
+    LEDS.setBrightness(200);
 
 
     // Initialize timers
@@ -514,8 +518,9 @@ void loop() {
                     // *model_gyro_processing -> /m/gyr/p
                     // Assume everything is a float
                     // packOSC( dataDictionary, lengthDictionary )
-                    
-                    sendCommunications_Report( currentReportType );
+                    if ( currentAnimation != DUALPOWER ) {
+                        sendCommunications_Report( currentReportType );
+                    }
 
 
                     // SELECT HERE WHICH COMMUNICATIONS TO SEND
